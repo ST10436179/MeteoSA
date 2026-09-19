@@ -1,0 +1,8 @@
+<resources>
+    <color name="sa_green">#007A4D</color>
+    <color name="sa_gold">#FFB612</color>
+    <color name="sa_blue">#002395</color>
+    <color name="storm_red">#DE3831</color>
+    <color name="surface_light">#FBFDFF</color>
+    <color name="surface_dark">#101418</color>
+</resources>

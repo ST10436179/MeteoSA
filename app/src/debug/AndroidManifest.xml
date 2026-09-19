@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only override: allows plain HTTP so you can point BACKEND_BASE_URL at a backend
+  running on your own PC (via adb reverse) while developing. Release builds do NOT merge
+  this file, so the Play Store build stays HTTPS-only.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning"
+        xmlns:tools="http://schemas.android.com/tools" />
+</manifest>

@@ -1,0 +1,26 @@
+*.iml
+.gradle/
+.claude/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Android
+app/build/
+app/release/
+*.apk
+*.aab
+
+# Node backend
+backend/node_modules/
+backend/.env
+backend/npm-debug.log*
+
+# Secrets
+*.jks
+*.keystore

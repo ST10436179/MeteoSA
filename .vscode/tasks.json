@@ -1,0 +1,59 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Android: Build debug APK",
+            "type": "shell",
+            "command": "./gradlew.bat assembleDebug",
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": true }
+        },
+        {
+            "label": "Android: Install on connected phone",
+            "type": "shell",
+            "command": "./gradlew.bat installDebug",
+            "problemMatcher": []
+        },
+        {
+            "label": "Android: Run unit tests",
+            "type": "shell",
+            "command": "./gradlew.bat testDebugUnitTest",
+            "problemMatcher": [],
+            "group": { "kind": "test", "isDefault": true }
+        },
+        {
+            "label": "Android: Launch app on phone",
+            "type": "shell",
+            "command": "adb shell am start -n com.meteosa.app/.MainActivity",
+            "problemMatcher": []
+        },
+        {
+            "label": "Android: View logs (logcat, app only)",
+            "type": "shell",
+            "command": "adb logcat --pid=$(adb shell pidof -s com.meteosa.app)",
+            "problemMatcher": []
+        },
+        {
+            "label": "Backend: Install dependencies",
+            "type": "shell",
+            "command": "npm install",
+            "options": { "cwd": "${workspaceFolder}/backend" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Backend: Run locally",
+            "type": "shell",
+            "command": "npm start",
+            "options": { "cwd": "${workspaceFolder}/backend" },
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "Backend: Run tests",
+            "type": "shell",
+            "command": "npm test",
+            "options": { "cwd": "${workspaceFolder}/backend" },
+            "problemMatcher": []
+        }
+    ]
+}

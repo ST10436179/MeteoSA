@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "fwcd.kotlin",
+        "vscjava.vscode-gradle",
+        "redhat.vscode-xml",
+        "adelphes.android-dev-ext",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+    ]
+}

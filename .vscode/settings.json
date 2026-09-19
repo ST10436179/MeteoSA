@@ -1,0 +1,15 @@
+{
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "files.exclude": {
+        "**/build": true,
+        "**/.gradle": true,
+        "backend/node_modules": true
+    },
+    "search.exclude": {
+        "**/build": true,
+        "**/.gradle": true,
+        "backend/node_modules": true
+    }
+}

@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">MeteoSA</string>
+
+    <!-- Auth -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="display_name">Display name</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="dont_have_account">Don\'t have an account? Register</string>
+    <string name="already_have_account">Already have an account? Login</string>
+
+    <!-- Home -->
+    <string name="home">Home</string>
+    <string name="five_day_forecast">5-Day Forecast</string>
+    <string name="use_my_location">Use my location</string>
+
+    <!-- Reports -->
+    <string name="community_reports">Community Reports</string>
+    <string name="report_impact">Report a weather impact</string>
+    <string name="report_type">Type</string>
+    <string name="description">Description</string>
+    <string name="submit">Submit</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="severe_weather_alerts">Severe weather alerts</string>
+    <string name="daily_forecast_notifications">Daily forecast notifications</string>
+    <string name="logout">Log out</string>
+    <string name="storm_chaser_points">Storm Chaser points</string>
+</resources>
