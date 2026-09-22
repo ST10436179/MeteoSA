@@ -22,8 +22,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -32,6 +32,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -58,16 +59,24 @@ import com.meteosa.app.data.remote.dto.ReportType
 import com.meteosa.app.data.repository.ReportsRepository
 import com.meteosa.app.util.GenericViewModelFactory
 import com.meteosa.app.util.UiState
+import com.meteosa.app.util.isoTimestampToRelativeTime
 
 private const val DEFAULT_LAT = -26.2041
 private const val DEFAULT_LON = 28.0473
 
 @Composable
-fun ReportsScreen(reportsRepository: ReportsRepository, onPointsAwarded: (Int) -> Unit) {
+fun ReportsScreen(
+    reportsRepository: ReportsRepository,
+    currentUserId: String,
+    onPointsAwarded: (Int) -> Unit,
+    onReportDeleted: (Int) -> Unit
+) {
     val viewModel: ReportsViewModel = viewModel(factory = GenericViewModelFactory { ReportsViewModel(reportsRepository) })
     val reportsState by viewModel.reportsState.collectAsState()
     val submitState by viewModel.submitState.collectAsState()
+    val deleteState by viewModel.deleteState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
+    var reportPendingDelete by remember { mutableStateOf<ReportDto?>(null) }
 
     val context = LocalContext.current
     var deviceLat by remember { mutableStateOf(DEFAULT_LAT) }
@@ -113,6 +122,14 @@ fun ReportsScreen(reportsRepository: ReportsRepository, onPointsAwarded: (Int) -
             onPointsAwarded(state.data)
             showDialog = false
             viewModel.resetSubmitState()
+        }
+    }
+
+    LaunchedEffect(deleteState) {
+        val state = deleteState
+        if (state is UiState.Success) {
+            onReportDeleted(state.data)
+            viewModel.resetDeleteState()
         }
     }
 
@@ -167,7 +184,13 @@ fun ReportsScreen(reportsRepository: ReportsRepository, onPointsAwarded: (Int) -
                                         ),
                                         verticalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        items(state.data) { report -> ReportCard(report) }
+                                        items(state.data) { report ->
+                                        ReportCard(
+                                            report = report,
+                                            isOwnReport = report.userId == currentUserId,
+                                            onDeleteClick = { reportPendingDelete = report }
+                                        )
+                                    }
                                     }
                                 }
                             }
@@ -185,6 +208,26 @@ fun ReportsScreen(reportsRepository: ReportsRepository, onPointsAwarded: (Int) -
             onDismiss = { showDialog = false; viewModel.resetSubmitState() },
             onSubmit = { type, description ->
                 viewModel.submitReport(deviceLat, deviceLon, type, description)
+            }
+        )
+    }
+
+    reportPendingDelete?.let { report ->
+        AlertDialog(
+            onDismissRequest = { reportPendingDelete = null },
+            title = { Text("Delete this report?") },
+            text = { Text("This also removes the points it earned. This can't be undone.") },
+            confirmButton = {
+                TextButton(
+                    enabled = deleteState !is UiState.Loading,
+                    onClick = {
+                        viewModel.deleteReport(report.reportId, deviceLat, deviceLon)
+                        reportPendingDelete = null
+                    }
+                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { reportPendingDelete = null }) { Text("Cancel") }
             }
         )
     }
@@ -215,21 +258,44 @@ private fun ReportsLegend() {
 }
 
 @Composable
-private fun ReportCard(report: ReportDto) {
+private fun ReportCard(report: ReportDto, isOwnReport: Boolean, onDeleteClick: () -> Unit) {
     val typeLabel = ReportType.values().find { it.apiValue == report.reportType }?.label ?: report.reportType
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                AssistChip(onClick = {}, label = { Text(typeLabel) })
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .background(colorForReportType(report.reportType), CircleShape)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(typeLabel, style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    report.displayName ?: "Community member",
+                    "· ${report.displayName ?: "Community member"}",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(Modifier.weight(1f))
+                if (isOwnReport) {
+                    IconButton(onClick = onDeleteClick, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = "Delete report",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(6.dp))
             Text(report.description, style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                isoTimestampToRelativeTime(report.createdAt),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

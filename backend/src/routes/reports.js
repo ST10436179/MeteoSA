@@ -99,4 +99,44 @@ router.post('/', requireAuth, async (req, res) => {
     }
 });
 
+// DELETE /api/reports/:reportId - only the report's author may delete their own report. Also
+// reverses the points that report earned, so deleting a mistaken report doesn't leave the user
+// with points for something that no longer exists.
+router.delete('/:reportId', requireAuth, async (req, res) => {
+    const { reportId } = req.params;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const existing = await client.query(
+            'SELECT user_id FROM community_reports WHERE report_id = $1',
+            [reportId]
+        );
+        if (existing.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Report not found.' });
+        }
+        if (existing.rows[0].user_id !== req.userId) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'You can only delete your own reports.' });
+        }
+
+        await client.query('DELETE FROM community_reports WHERE report_id = $1', [reportId]);
+
+        const pointsResult = await client.query(
+            'UPDATE users SET points = GREATEST(points - $1, 0) WHERE user_id = $2 RETURNING points',
+            [POINTS_PER_REPORT, req.userId]
+        );
+
+        await client.query('COMMIT');
+        res.json({ points: pointsResult.rows[0].points });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Delete report failed:', err);
+        res.status(500).json({ error: 'Could not delete report.' });
+    } finally {
+        client.release();
+    }
+});
+
 module.exports = router;

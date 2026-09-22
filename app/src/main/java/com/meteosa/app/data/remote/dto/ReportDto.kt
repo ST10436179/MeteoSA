@@ -34,3 +34,8 @@ data class SubmitReportResponse(
     /** Total gamification points the user has after this submission. */
     val points: Int
 )
+
+data class DeleteReportResponse(
+    /** Total gamification points the user has after the report's points were reversed. */
+    val points: Int
+)

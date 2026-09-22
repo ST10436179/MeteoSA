@@ -23,4 +23,11 @@ class ReportsRepository(
         sessionManager.updatePoints(response.points)
         return response
     }
+
+    /** Returns the user's updated point total after the report's points are reversed. */
+    suspend fun deleteReport(reportId: String): Int {
+        val response = api.deleteReport(reportId)
+        sessionManager.updatePoints(response.points)
+        return response.points
+    }
 }

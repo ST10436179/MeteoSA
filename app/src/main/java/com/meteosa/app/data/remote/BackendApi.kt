@@ -1,6 +1,7 @@
 package com.meteosa.app.data.remote
 
 import com.meteosa.app.data.remote.dto.AuthResponse
+import com.meteosa.app.data.remote.dto.DeleteReportResponse
 import com.meteosa.app.data.remote.dto.LoginRequest
 import com.meteosa.app.data.remote.dto.RegisterRequest
 import com.meteosa.app.data.remote.dto.ReportDto
@@ -8,8 +9,10 @@ import com.meteosa.app.data.remote.dto.ReportRequest
 import com.meteosa.app.data.remote.dto.SubmitReportResponse
 import com.meteosa.app.data.remote.dto.UserDto
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -37,4 +40,7 @@ interface BackendApi {
 
     @POST("api/reports")
     suspend fun submitReport(@Body body: ReportRequest): SubmitReportResponse
+
+    @DELETE("api/reports/{reportId}")
+    suspend fun deleteReport(@Path("reportId") reportId: String): DeleteReportResponse
 }

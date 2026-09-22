@@ -19,6 +19,9 @@ class ReportsViewModel(private val reportsRepository: ReportsRepository) : ViewM
     private val _submitState = MutableStateFlow<UiState<Int>>(UiState.Idle)
     val submitState: StateFlow<UiState<Int>> = _submitState.asStateFlow()
 
+    private val _deleteState = MutableStateFlow<UiState<Int>>(UiState.Idle)
+    val deleteState: StateFlow<UiState<Int>> = _deleteState.asStateFlow()
+
     fun loadReports(lat: Double? = null, lon: Double? = null) {
         _reportsState.value = UiState.Loading
         viewModelScope.launch {
@@ -49,5 +52,22 @@ class ReportsViewModel(private val reportsRepository: ReportsRepository) : ViewM
 
     fun resetSubmitState() {
         _submitState.value = UiState.Idle
+    }
+
+    fun deleteReport(reportId: String, lat: Double, lon: Double) {
+        _deleteState.value = UiState.Loading
+        viewModelScope.launch {
+            _deleteState.value = try {
+                val points = reportsRepository.deleteReport(reportId)
+                loadReports(lat, lon)
+                UiState.Success(points)
+            } catch (t: Throwable) {
+                UiState.Error(t.toUserMessage())
+            }
+        }
+    }
+
+    fun resetDeleteState() {
+        _deleteState.value = UiState.Idle
     }
 }

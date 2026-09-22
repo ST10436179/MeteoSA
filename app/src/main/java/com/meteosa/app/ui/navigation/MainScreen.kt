@@ -14,6 +14,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,6 +35,7 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
     var tab by remember { mutableStateOf(MainTab.HOME) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val session by container.sessionManager.session.collectAsState()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -64,16 +66,24 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
             when (tab) {
                 MainTab.HOME -> HomeScreen(
                     weatherRepository = container.weatherRepository,
-                    dataSaverRepository = container.dataSaverRepository
+                    dataSaverRepository = container.dataSaverRepository,
+                    reportsRepository = container.reportsRepository
                 )
                 MainTab.REPORTS -> ReportsScreen(
                     reportsRepository = container.reportsRepository,
+                    currentUserId = session?.userId ?: "",
                     onPointsAwarded = { totalPoints ->
                         container.sessionManager.updatePoints(totalPoints)
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
                                 "Report submitted! ${badgeForPoints(totalPoints)} · $totalPoints points"
                             )
+                        }
+                    },
+                    onReportDeleted = { totalPoints ->
+                        container.sessionManager.updatePoints(totalPoints)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Report deleted · $totalPoints points")
                         }
                     }
                 )

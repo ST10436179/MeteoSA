@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DataSaverOn
 import androidx.compose.material.icons.filled.MyLocation
@@ -39,12 +44,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
+import com.meteosa.app.data.remote.dto.ReportDto
+import com.meteosa.app.data.remote.dto.ReportType
 import com.meteosa.app.data.repository.DataSaverRepository
+import com.meteosa.app.data.repository.ReportsRepository
 import com.meteosa.app.data.repository.WeatherRepository
+import com.meteosa.app.ui.screens.reports.colorForReportType
 import com.meteosa.app.util.GenericViewModelFactory
 import com.meteosa.app.util.UiState
 import kotlin.math.roundToInt
@@ -56,13 +66,18 @@ private const val DEFAULT_LON = 28.0473
 private val SEVERE_CONDITION_IDS = (200..232) + listOf(502, 503, 504, 522, 531) + (602..622) + listOf(771, 781)
 
 @Composable
-fun HomeScreen(weatherRepository: WeatherRepository, dataSaverRepository: DataSaverRepository) {
+fun HomeScreen(
+    weatherRepository: WeatherRepository,
+    dataSaverRepository: DataSaverRepository,
+    reportsRepository: ReportsRepository
+) {
     val viewModel: HomeViewModel = viewModel(
-        factory = GenericViewModelFactory { HomeViewModel(weatherRepository, dataSaverRepository) }
+        factory = GenericViewModelFactory { HomeViewModel(weatherRepository, dataSaverRepository, reportsRepository) }
     )
     val uiState by viewModel.uiState.collectAsState()
     val locationLabel by viewModel.locationLabel.collectAsState()
     val dataSaverActive by viewModel.dataSaverActive.collectAsState()
+    val nearbyReports by viewModel.nearbyReports.collectAsState()
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
@@ -130,9 +145,9 @@ fun HomeScreen(weatherRepository: WeatherRepository, dataSaverRepository: DataSa
                 }
                 is UiState.Success -> {
                     if (dataSaverActive) {
-                        DataSaverHomeContent(locationLabel = locationLabel, data = state.data)
+                        DataSaverHomeContent(locationLabel = locationLabel, data = state.data, nearbyReports = nearbyReports)
                     } else {
-                        HomeContent(locationLabel = locationLabel, data = state.data)
+                        HomeContent(locationLabel = locationLabel, data = state.data, nearbyReports = nearbyReports)
                     }
                 }
             }
@@ -141,13 +156,14 @@ fun HomeScreen(weatherRepository: WeatherRepository, dataSaverRepository: DataSa
 }
 
 @Composable
-private fun HomeContent(locationLabel: String, data: HomeUiData) {
+private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: List<ReportDto>) {
     val current = data.current
     val isSevere = current.weather.firstOrNull()?.id?.let { it in SEVERE_CONDITION_IDS } ?: false
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
         Text(locationLabel, style = MaterialTheme.typography.titleMedium)
@@ -213,6 +229,59 @@ private fun HomeContent(locationLabel: String, data: HomeUiData) {
                 }
             }
         }
+
+        NearbyReportsSection(nearbyReports)
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+/**
+ * Ties Home back to the app's own community data instead of ending after the forecast - was
+ * previously a large empty area below the 5-day forecast with nothing in it.
+ */
+@Composable
+private fun NearbyReportsSection(reports: List<ReportDto>) {
+    Spacer(Modifier.height(28.dp))
+    Text("Community Reports Nearby", style = MaterialTheme.typography.titleMedium)
+    Spacer(Modifier.height(8.dp))
+    if (reports.isEmpty()) {
+        Text(
+            "No community reports nearby yet. Open the Reports tab to add one.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            reports.forEach { report -> NearbyReportRow(report) }
+        }
+    }
+}
+
+@Composable
+private fun NearbyReportRow(report: ReportDto) {
+    val typeLabel = ReportType.values().find { it.apiValue == report.reportType }?.label ?: report.reportType
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(colorForReportType(report.reportType), CircleShape)
+            )
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(typeLabel, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    report.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 
@@ -223,11 +292,12 @@ private fun HomeContent(locationLabel: String, data: HomeUiData) {
  * succeeds (see DataSaverRepository); can also be forced on from Settings for testing.
  */
 @Composable
-private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData) {
+private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData, nearbyReports: List<ReportDto>) {
     val current = data.current
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -264,5 +334,19 @@ private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData) {
                 Text("${day.maxTemp}° / ${day.minTemp}°", style = MaterialTheme.typography.bodyLarge)
             }
         }
+
+        Spacer(Modifier.height(20.dp))
+        Text("Community Reports Nearby", style = MaterialTheme.typography.titleMedium)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
+        if (nearbyReports.isEmpty()) {
+            Text("No community reports nearby yet.", style = MaterialTheme.typography.bodyMedium)
+        } else {
+            nearbyReports.forEach { report ->
+                val typeLabel = ReportType.values().find { it.apiValue == report.reportType }?.label ?: report.reportType
+                Text("$typeLabel: ${report.description}", style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(4.dp))
+            }
+        }
+        Spacer(Modifier.height(24.dp))
     }
 }
