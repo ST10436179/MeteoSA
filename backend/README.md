@@ -23,9 +23,12 @@ Passwords are hashed with **bcrypt** server-side before being stored (see
 1. Go to [supabase.com](https://supabase.com), sign up (free), and create a new project.
 2. Once it's provisioned, open **SQL Editor**, paste the contents of `src/db/schema.sql`, and
    click **Run**. This creates the `users` and `community_reports` tables.
-3. Go to **Project Settings -> Database -> Connection string -> URI**. Copy it - you'll need it
-   as `DATABASE_URL` below. (Supabase's example URI has `[YOUR-PASSWORD]` in it - replace that
-   with the database password you set when creating the project.)
+3. Click **Connect** on your project dashboard, and under connection type pick **Transaction
+   pooler** (not "Direct connection" - that host is IPv6-only and won't resolve on most
+   home/mobile networks unless you pay for Supabase's IPv4 add-on). Copy that URI - you'll need
+   it as `DATABASE_URL` below. Replace `[YOUR-PASSWORD]` in it with the database password you
+   set when creating the project. It should look like:
+   `postgresql://postgres.<project-ref>:<password>@aws-<n>-<region>.pooler.supabase.com:6543/postgres`
 
 ## 2. Run it locally
 

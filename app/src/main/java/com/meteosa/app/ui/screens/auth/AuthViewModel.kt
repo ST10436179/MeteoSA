@@ -43,7 +43,15 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 authRepository.login(email.trim(), password)
                 UiState.Success(Unit)
             } catch (t: Throwable) {
-                UiState.Error(t.toUserMessage())
+                // A 401 specifically on /api/auth/login always means bad credentials - that's
+                // the one call site where that wording is actually correct (see UiState.kt for
+                // why the shared toUserMessage() doesn't assume that generally).
+                val message = if (t is retrofit2.HttpException && t.code() == 401) {
+                    "Incorrect email or password."
+                } else {
+                    t.toUserMessage()
+                }
+                UiState.Error(message)
             }
         }
     }
