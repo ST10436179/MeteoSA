@@ -15,8 +15,11 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import java.io.File
 
-/** Maps a report type to a marker colour so the map reads at a glance, same idea as a legend. */
-private fun colorForReportType(reportType: String): androidx.compose.ui.graphics.Color = when (reportType) {
+/**
+ * Maps a report type to a marker colour so the map reads at a glance. Not private: ReportsScreen
+ * reuses this for the legend shown below the map, so the two always stay in sync.
+ */
+fun colorForReportType(reportType: String): androidx.compose.ui.graphics.Color = when (reportType) {
     ReportType.FLOOD.apiValue -> androidx.compose.ui.graphics.Color(0xFF1976D2)
     ReportType.HAIL.apiValue -> androidx.compose.ui.graphics.Color(0xFF64B5F6)
     ReportType.WIND.apiValue -> androidx.compose.ui.graphics.Color(0xFF757575)

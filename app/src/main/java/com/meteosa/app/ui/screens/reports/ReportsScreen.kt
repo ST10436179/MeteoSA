@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +14,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -26,10 +30,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -124,28 +130,46 @@ fun ReportsScreen(reportsRepository: ReportsRepository, onPointsAwarded: (Int) -
                 reports = reportsForMap,
                 centerLat = deviceLat,
                 centerLon = deviceLon,
-                modifier = Modifier.fillMaxWidth().height(240.dp)
+                modifier = Modifier.fillMaxWidth().height(220.dp)
             )
-            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                when (val state = reportsState) {
-                    is UiState.Loading, UiState.Idle -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    is UiState.Error -> Text(
-                        state.message,
-                        modifier = Modifier.align(Alignment.Center).padding(24.dp)
-                    )
-                    is UiState.Success -> {
-                        if (state.data.isEmpty()) {
-                            Text(
-                                "No reports near you yet. Be the first to report a weather impact!",
+            // A rounded, elevated panel below the map (rather than plain background) makes it
+            // read as its own section instead of the report cards looking like they're floating
+            // loose over the map with no boundary between the two.
+            Surface(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                tonalElevation = 3.dp,
+                shadowElevation = 6.dp
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    ReportsLegend()
+                    HorizontalDivider()
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                        when (val state = reportsState) {
+                            is UiState.Loading, UiState.Idle -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                            is UiState.Error -> Text(
+                                state.message,
                                 modifier = Modifier.align(Alignment.Center).padding(24.dp)
                             )
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                items(state.data) { report -> ReportCard(report) }
+                            is UiState.Success -> {
+                                if (state.data.isEmpty()) {
+                                    Text(
+                                        "No reports near you yet. Be the first to report a weather impact!",
+                                        modifier = Modifier.align(Alignment.Center).padding(24.dp)
+                                    )
+                                } else {
+                                    LazyColumn(
+                                        modifier = Modifier.fillMaxSize(),
+                                        // Extra bottom padding keeps the last card clear of the FAB,
+                                        // which otherwise sits directly on top of it.
+                                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                            start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp
+                                        ),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        items(state.data) { report -> ReportCard(report) }
+                                    }
+                                }
                             }
                         }
                     }
@@ -163,6 +187,30 @@ fun ReportsScreen(reportsRepository: ReportsRepository, onPointsAwarded: (Int) -
                 viewModel.submitReport(deviceLat, deviceLon, type, description)
             }
         )
+    }
+}
+
+/** Always-visible key explaining the map's marker colours, and fills what would otherwise be a
+ *  big empty gap below a short report list. */
+@Composable
+private fun ReportsLegend() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ReportType.values().forEach { type ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .background(colorForReportType(type.apiValue), CircleShape)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(type.label, style = MaterialTheme.typography.labelSmall)
+            }
+        }
     }
 }
 
