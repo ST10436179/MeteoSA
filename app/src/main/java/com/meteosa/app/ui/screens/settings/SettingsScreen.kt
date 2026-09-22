@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.Button
@@ -45,6 +46,7 @@ fun SettingsScreen(
     val darkTheme by themePreferences.isDarkTheme.collectAsState(initial = false)
     val severeAlerts by themePreferences.severeAlertsEnabled.collectAsState(initial = true)
     val dailyForecastNotifs by themePreferences.dailyForecastNotifsEnabled.collectAsState(initial = true)
+    val forceDataSaver by themePreferences.forceDataSaverEnabled.collectAsState(initial = false)
 
     LaunchedEffect(session) {
         if (session == null) onLoggedOut()
@@ -66,13 +68,35 @@ fun SettingsScreen(
                     Text(session!!.displayName, style = MaterialTheme.typography.titleLarge)
                     Text(session!!.email, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(12.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
-                        Spacer(Modifier.height(0.dp))
-                        Spacer(modifier = Modifier.padding(start = 8.dp))
-                        Column {
-                            Text("${session!!.points} points", style = MaterialTheme.typography.titleMedium)
-                            Text(badgeForPoints(session!!.points), style = MaterialTheme.typography.bodyMedium)
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = androidx.compose.material3.CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Filled.EmojiEvents,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.height(32.dp).width(32.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(start = 12.dp))
+                            Column {
+                                Text(
+                                    badgeForPoints(session!!.points),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                                Text(
+                                    "${session!!.points} points earned reporting weather impacts",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
                         }
                     }
                 }
@@ -98,6 +122,18 @@ fun SettingsScreen(
                 title = "Daily forecast notifications",
                 checked = dailyForecastNotifs,
                 onCheckedChange = viewModel::setDailyForecastNotifsEnabled
+            )
+            HorizontalDivider()
+            SettingsSwitchRow(
+                title = "Force Data-Saver Mode",
+                checked = forceDataSaver,
+                onCheckedChange = viewModel::setForceDataSaverEnabled
+            )
+            Text(
+                "Also switches on automatically on a restricted network or during load-shedding.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
             HorizontalDivider()
             Row(

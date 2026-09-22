@@ -34,6 +34,10 @@ class SettingsViewModel(
         viewModelScope.launch { themePreferences.setDailyForecastNotifsEnabled(enabled) }
     }
 
+    fun setForceDataSaverEnabled(enabled: Boolean) {
+        viewModelScope.launch { themePreferences.setForceDataSaverEnabled(enabled) }
+    }
+
     fun logout() {
         authRepository.logout()
     }

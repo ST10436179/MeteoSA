@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DataSaverOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
+import com.meteosa.app.data.repository.DataSaverRepository
 import com.meteosa.app.data.repository.WeatherRepository
 import com.meteosa.app.util.GenericViewModelFactory
 import com.meteosa.app.util.UiState
@@ -53,10 +56,13 @@ private const val DEFAULT_LON = 28.0473
 private val SEVERE_CONDITION_IDS = (200..232) + listOf(502, 503, 504, 522, 531) + (602..622) + listOf(771, 781)
 
 @Composable
-fun HomeScreen(weatherRepository: WeatherRepository) {
-    val viewModel: HomeViewModel = viewModel(factory = GenericViewModelFactory { HomeViewModel(weatherRepository) })
+fun HomeScreen(weatherRepository: WeatherRepository, dataSaverRepository: DataSaverRepository) {
+    val viewModel: HomeViewModel = viewModel(
+        factory = GenericViewModelFactory { HomeViewModel(weatherRepository, dataSaverRepository) }
+    )
     val uiState by viewModel.uiState.collectAsState()
     val locationLabel by viewModel.locationLabel.collectAsState()
+    val dataSaverActive by viewModel.dataSaverActive.collectAsState()
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
@@ -123,7 +129,11 @@ fun HomeScreen(weatherRepository: WeatherRepository) {
                     }
                 }
                 is UiState.Success -> {
-                    HomeContent(locationLabel = locationLabel, data = state.data)
+                    if (dataSaverActive) {
+                        DataSaverHomeContent(locationLabel = locationLabel, data = state.data)
+                    } else {
+                        HomeContent(locationLabel = locationLabel, data = state.data)
+                    }
                 }
             }
         }
@@ -201,6 +211,57 @@ private fun HomeContent(locationLabel: String, data: HomeUiData) {
                         Text("${day.maxTemp}°/${day.minTemp}°", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Part 1's "Data-Saver Mode": no icons, no cards, no per-day graphics - just the numbers, so the
+ * screen is cheap to render and cheap to re-fetch on a restricted connection. Shown automatically
+ * when the device's network is metered/has system Data Saver on, or a load-shedding check
+ * succeeds (see DataSaverRepository); can also be forced on from Settings for testing.
+ */
+@Composable
+private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData) {
+    val current = data.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.DataSaverOn, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "Data-Saver Mode is on - lightweight text view to save data.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Spacer(Modifier.height(20.dp))
+
+        Text(locationLabel, style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "${current.main.temp.roundToInt()}°C, ${current.weather.firstOrNull()?.description ?: ""}",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Text(
+            "Feels like ${current.main.feelsLike.roundToInt()}°C · Humidity ${current.main.humidity}% · Wind ${current.wind.speed} m/s",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Spacer(Modifier.height(20.dp))
+        Text("5-Day Forecast", style = MaterialTheme.typography.titleMedium)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
+        data.daily.forEach { day ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(day.dayLabel, style = MaterialTheme.typography.bodyLarge)
+                Text("${day.maxTemp}° / ${day.minTemp}°", style = MaterialTheme.typography.bodyLarge)
             }
         }
     }

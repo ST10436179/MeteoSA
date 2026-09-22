@@ -8,6 +8,8 @@ import com.meteosa.app.data.remote.AuthInterceptor
 import com.meteosa.app.data.remote.BackendApi
 import com.meteosa.app.data.remote.WeatherApi
 import com.meteosa.app.data.repository.AuthRepository
+import com.meteosa.app.data.repository.DataSaverRepository
+import com.meteosa.app.data.repository.LoadSheddingRepository
 import com.meteosa.app.data.repository.ReportsRepository
 import com.meteosa.app.data.repository.WeatherRepository
 import okhttp3.OkHttpClient
@@ -62,7 +64,19 @@ class AppContainer(context: Context) {
         .build()
         .create(WeatherApi::class.java)
 
+    // Short timeout on purpose: the load-shedding status check is a best-effort, unauthenticated
+    // third-party call, and a failure here must never make Home feel like it's hanging.
+    private val loadSheddingHttpClient = OkHttpClient.Builder()
+        .connectTimeout(4, TimeUnit.SECONDS)
+        .readTimeout(4, TimeUnit.SECONDS)
+        .build()
+
     val authRepository = AuthRepository(backendApi, sessionManager)
     val reportsRepository = ReportsRepository(backendApi, sessionManager)
     val weatherRepository = WeatherRepository(weatherApi)
+    val dataSaverRepository = DataSaverRepository(
+        appContext = context.applicationContext,
+        themePreferences = themePreferences,
+        loadSheddingRepository = LoadSheddingRepository(loadSheddingHttpClient)
+    )
 }

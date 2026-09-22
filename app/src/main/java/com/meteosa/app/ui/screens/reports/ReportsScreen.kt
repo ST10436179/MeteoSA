@@ -118,26 +118,35 @@ fun ReportsScreen(reportsRepository: ReportsRepository, onPointsAwarded: (Int) -
             }
         }
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (val state = reportsState) {
-                is UiState.Loading, UiState.Idle -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                is UiState.Error -> Text(
-                    state.message,
-                    modifier = Modifier.align(Alignment.Center).padding(24.dp)
-                )
-                is UiState.Success -> {
-                    if (state.data.isEmpty()) {
-                        Text(
-                            "No reports near you yet. Be the first to report a weather impact!",
-                            modifier = Modifier.align(Alignment.Center).padding(24.dp)
-                        )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            items(state.data) { report -> ReportCard(report) }
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            val reportsForMap = (reportsState as? UiState.Success)?.data.orEmpty()
+            ReportsMapView(
+                reports = reportsForMap,
+                centerLat = deviceLat,
+                centerLon = deviceLon,
+                modifier = Modifier.fillMaxWidth().height(240.dp)
+            )
+            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                when (val state = reportsState) {
+                    is UiState.Loading, UiState.Idle -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    is UiState.Error -> Text(
+                        state.message,
+                        modifier = Modifier.align(Alignment.Center).padding(24.dp)
+                    )
+                    is UiState.Success -> {
+                        if (state.data.isEmpty()) {
+                            Text(
+                                "No reports near you yet. Be the first to report a weather impact!",
+                                modifier = Modifier.align(Alignment.Center).padding(24.dp)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                items(state.data) { report -> ReportCard(report) }
+                            }
                         }
                     }
                 }

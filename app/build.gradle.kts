@@ -111,6 +111,10 @@ dependencies {
     // Device location for "weather near me"
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
+    // Community Impact map (Part 1 design doc): OpenStreetMap-based, no API key/account needed,
+    // unlike Mapbox/Google Maps which both require a signed-up access token we don't have here.
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
     // Unit testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
