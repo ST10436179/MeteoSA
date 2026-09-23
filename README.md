@@ -100,12 +100,17 @@ Two GitHub Actions workflows run automatically on every push/PR (`.github/workfl
 
 ## Screenshots
 
-_Add screenshots/GIFs of Login, Home Dashboard, Community Reports, and Settings here before
-submission._
+| Login | Home Dashboard |
+|---|---|
+| ![Login screen](docs/screenshots/login.png) | ![Home dashboard](docs/screenshots/home.png) |
+
+| Community Reports | Settings |
+|---|---|
+| ![Community reports map](docs/screenshots/community-reports.png) | ![Settings screen](docs/screenshots/settings.png) |
 
 ## Demo video
 
-_Link to the Part 2 demonstration video goes here._
+[Part 2 demonstration video](https://drive.google.com/file/d/1hkOiiqpe1PlpYy0-1O2JXCWfs50HBMma/view?usp=sharing)
 
 ## AI usage
 
