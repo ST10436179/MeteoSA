@@ -21,6 +21,10 @@ sealed class UiState<out T> {
 fun Throwable.toUserMessage(): String = when (this) {
     is java.net.UnknownHostException -> "No internet connection. Check your network and try again."
     is java.net.SocketTimeoutException -> "The server took too long to respond. Please try again."
+    // Thrown as "Failed to connect to /host:port" when the backend is unreachable (server down,
+    // or - on a local dev backend - the adb reverse tunnel dropped). That raw message isn't
+    // something a user should ever see, so it gets a proper explanation instead.
+    is java.net.ConnectException -> "Could not reach the server. Please check your connection and try again."
     is retrofit2.HttpException -> when (code()) {
         401 -> "Not authorized (401). Check your session or API configuration."
         409 -> "An account with that email already exists."

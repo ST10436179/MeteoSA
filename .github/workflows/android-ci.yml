@@ -11,16 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # No separate Android SDK setup action: GitHub's ubuntu-latest runners already ship the
+      # Android SDK cmdline-tools with licenses pre-accepted. The previously-used
+      # android-actions/setup-android@v3 is unmaintained and fails outright now that Actions
+      # runners force every action onto Node 24, which that action's old JS can't run on. Gradle
+      # downloads any additional SDK platform/build-tools it needs during the build itself.
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
