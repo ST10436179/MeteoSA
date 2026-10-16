@@ -4,6 +4,7 @@ import android.content.Context
 import com.meteosa.app.BuildConfig
 import com.meteosa.app.data.local.SessionManager
 import com.meteosa.app.data.local.ThemePreferences
+import com.meteosa.app.data.local.db.MeteoSaDatabase
 import com.meteosa.app.data.remote.AuthInterceptor
 import com.meteosa.app.data.remote.BackendApi
 import com.meteosa.app.data.remote.WeatherApi
@@ -28,6 +29,7 @@ class AppContainer(context: Context) {
 
     val sessionManager = SessionManager(context.applicationContext)
     val themePreferences = ThemePreferences(context.applicationContext)
+    val database = MeteoSaDatabase.getInstance(context.applicationContext)
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = if (BuildConfig.DEBUG) {
@@ -72,8 +74,13 @@ class AppContainer(context: Context) {
         .build()
 
     val authRepository = AuthRepository(backendApi, sessionManager)
-    val reportsRepository = ReportsRepository(backendApi, sessionManager)
-    val weatherRepository = WeatherRepository(weatherApi)
+    val reportsRepository = ReportsRepository(
+        backendApi,
+        sessionManager,
+        database.reportCacheDao(),
+        database.pendingReportDao()
+    )
+    val weatherRepository = WeatherRepository(weatherApi, database.weatherCacheDao())
     val dataSaverRepository = DataSaverRepository(
         appContext = context.applicationContext,
         themePreferences = themePreferences,

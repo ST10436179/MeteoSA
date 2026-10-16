@@ -85,6 +85,11 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar("Report deleted · $totalPoints points")
                         }
+                    },
+                    onReportQueuedOffline = {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("You're offline - report saved and will sync automatically.")
+                        }
                     }
                 )
                 MainTab.SETTINGS -> SettingsScreen(

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -57,6 +58,8 @@ import com.google.android.gms.location.LocationServices
 import com.meteosa.app.data.remote.dto.ReportDto
 import com.meteosa.app.data.remote.dto.ReportType
 import com.meteosa.app.data.repository.ReportsRepository
+import com.meteosa.app.data.repository.SubmitOutcome
+import com.meteosa.app.data.sync.ReportSyncWorker
 import com.meteosa.app.util.GenericViewModelFactory
 import com.meteosa.app.util.UiState
 import com.meteosa.app.util.isoTimestampToRelativeTime
@@ -69,12 +72,14 @@ fun ReportsScreen(
     reportsRepository: ReportsRepository,
     currentUserId: String,
     onPointsAwarded: (Int) -> Unit,
-    onReportDeleted: (Int) -> Unit
+    onReportDeleted: (Int) -> Unit,
+    onReportQueuedOffline: () -> Unit
 ) {
     val viewModel: ReportsViewModel = viewModel(factory = GenericViewModelFactory { ReportsViewModel(reportsRepository) })
     val reportsState by viewModel.reportsState.collectAsState()
     val submitState by viewModel.submitState.collectAsState()
     val deleteState by viewModel.deleteState.collectAsState()
+    val pendingCount by viewModel.pendingCount.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     var reportPendingDelete by remember { mutableStateOf<ReportDto?>(null) }
 
@@ -114,12 +119,22 @@ fun ReportsScreen(
         }
     }
 
+    // Opening Reports is as good a moment as any to try flushing anything queued while offline,
+    // rather than waiting for WorkManager's next 15-minute periodic window.
+    LaunchedEffect(Unit) {
+        ReportSyncWorker.syncNow(context)
+        viewModel.refreshPendingCount()
+    }
+
     // See AuthScreen for why this is a LaunchedEffect rather than a plain "if": it must fire
     // exactly once per successful submission, not on every recomposition while still Success.
     LaunchedEffect(submitState) {
         val state = submitState
         if (state is UiState.Success) {
-            onPointsAwarded(state.data)
+            when (val outcome = state.data) {
+                is SubmitOutcome.Submitted -> onPointsAwarded(outcome.response.points)
+                is SubmitOutcome.QueuedOffline -> onReportQueuedOffline()
+            }
             showDialog = false
             viewModel.resetSubmitState()
         }
@@ -160,6 +175,9 @@ fun ReportsScreen(
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     ReportsLegend()
+                    if (pendingCount > 0) {
+                        PendingSyncBanner(pendingCount)
+                    }
                     HorizontalDivider()
                     Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                         when (val state = reportsState) {
@@ -254,6 +272,28 @@ private fun ReportsLegend() {
                 Text(type.label, style = MaterialTheme.typography.labelSmall)
             }
         }
+    }
+}
+
+/** Shown while one or more reports are still waiting in the local RoomDB queue for WorkManager
+ *  to upload (offline sync, Part 3). */
+@Composable
+private fun PendingSyncBanner(pendingCount: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            Icons.Filled.CloudUpload,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(Modifier.width(6.dp))
+        val label = if (pendingCount == 1) "1 report waiting to sync" else "$pendingCount reports waiting to sync"
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

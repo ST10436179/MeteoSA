@@ -4,6 +4,7 @@ import java.io.FileInputStream
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
 }
 
 // Read secrets/config out of local.properties (never committed) so they end up in
@@ -114,6 +115,14 @@ dependencies {
     // Community Impact map (Part 1 design doc): OpenStreetMap-based, no API key/account needed,
     // unlike Mapbox/Google Maps which both require a signed-up access token we don't have here.
     implementation("org.osmdroid:osmdroid-android:6.1.20")
+
+    // Offline mode with sync (Part 3): RoomDB for local caching + a queue of not-yet-synced
+    // community reports, WorkManager for the background sync job. Matches the sequence diagram
+    // from the Part 1 design document exactly.
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // Unit testing
     testImplementation("junit:junit:4.13.2")

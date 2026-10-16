@@ -2,13 +2,20 @@ package com.meteosa.app.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.meteosa.app.data.local.db.CachedDailyForecast
+import com.meteosa.app.data.local.db.WeatherCacheEntity
 import com.meteosa.app.data.remote.dto.CurrentWeatherResponse
+import com.meteosa.app.data.remote.dto.MainWeather
 import com.meteosa.app.data.remote.dto.ReportDto
+import com.meteosa.app.data.remote.dto.WeatherCondition
+import com.meteosa.app.data.remote.dto.Wind
 import com.meteosa.app.data.repository.DataSaverRepository
 import com.meteosa.app.data.repository.ReportsRepository
 import com.meteosa.app.data.repository.WeatherRepository
 import com.meteosa.app.util.UiState
 import com.meteosa.app.util.toUserMessage
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +23,9 @@ import kotlinx.coroutines.launch
 
 data class HomeUiData(
     val current: CurrentWeatherResponse,
-    val daily: List<DailyForecast>
+    val daily: List<DailyForecast>,
+    /** True when this is cached data served because the live fetch failed (offline mode). */
+    val isFromCache: Boolean = false
 )
 
 class HomeViewModel(
@@ -66,10 +75,20 @@ class HomeViewModel(
             _uiState.value = try {
                 val current = weatherRepository.getCurrentWeather(lat, lon)
                 val forecast = weatherRepository.getForecast(lat, lon)
+                val daily = forecast.toDailyForecasts()
                 _locationLabel.value = if (usingDeviceLocation) current.name else "${current.name} (default)"
-                UiState.Success(HomeUiData(current, forecast.toDailyForecasts()))
+                weatherRepository.cacheWeather(toCacheEntity(current, daily))
+                UiState.Success(HomeUiData(current, daily, isFromCache = false))
             } catch (t: Throwable) {
-                UiState.Error(t.toUserMessage())
+                // Offline-first fallback (Part 1 design doc): if the live call fails, serve the
+                // last successfully cached weather instead of just showing an error screen.
+                val cached = weatherRepository.getCachedWeather()
+                if (cached != null) {
+                    _locationLabel.value = "${cached.locationName} (offline)"
+                    UiState.Success(HomeUiData(cached.toCurrentWeatherResponse(), cached.toDailyForecastList(), isFromCache = true))
+                } else {
+                    UiState.Error(t.toUserMessage())
+                }
             }
         }
         viewModelScope.launch {
@@ -80,4 +99,37 @@ class HomeViewModel(
             }
         }
     }
+}
+
+private val gson = Gson()
+
+private fun toCacheEntity(current: CurrentWeatherResponse, daily: List<DailyForecast>): WeatherCacheEntity {
+    val cachedDaily = daily.map { CachedDailyForecast(it.dayLabel, it.icon, it.minTemp, it.maxTemp) }
+    val condition = current.weather.firstOrNull()
+    return WeatherCacheEntity(
+        locationName = current.name,
+        temperature = current.main.temp,
+        feelsLike = current.main.feelsLike,
+        humidity = current.main.humidity,
+        windSpeed = current.wind.speed,
+        conditionDescription = condition?.description ?: "",
+        conditionIcon = condition?.icon ?: "01d",
+        conditionId = condition?.id ?: 800,
+        dailyForecastJson = gson.toJson(cachedDaily),
+        timestamp = System.currentTimeMillis()
+    )
+}
+
+private fun WeatherCacheEntity.toCurrentWeatherResponse() = CurrentWeatherResponse(
+    name = locationName,
+    weather = listOf(WeatherCondition(conditionId, "", conditionDescription, conditionIcon)),
+    main = MainWeather(temp = temperature, feelsLike = feelsLike, tempMin = temperature, tempMax = temperature, humidity = humidity),
+    wind = Wind(windSpeed),
+    dt = timestamp / 1000
+)
+
+private fun WeatherCacheEntity.toDailyForecastList(): List<DailyForecast> {
+    val type = object : TypeToken<List<CachedDailyForecast>>() {}.type
+    val cached: List<CachedDailyForecast> = gson.fromJson(dailyForecastJson, type) ?: emptyList()
+    return cached.map { DailyForecast(it.dayLabel, it.icon, it.minTemp, it.maxTemp) }
 }

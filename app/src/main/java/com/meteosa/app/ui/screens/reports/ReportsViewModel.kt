@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meteosa.app.data.remote.dto.ReportDto
 import com.meteosa.app.data.repository.ReportsRepository
+import com.meteosa.app.data.repository.SubmitOutcome
 import com.meteosa.app.util.UiState
 import com.meteosa.app.util.toUserMessage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +17,12 @@ class ReportsViewModel(private val reportsRepository: ReportsRepository) : ViewM
     private val _reportsState = MutableStateFlow<UiState<List<ReportDto>>>(UiState.Idle)
     val reportsState: StateFlow<UiState<List<ReportDto>>> = _reportsState.asStateFlow()
 
-    private val _submitState = MutableStateFlow<UiState<Int>>(UiState.Idle)
-    val submitState: StateFlow<UiState<Int>> = _submitState.asStateFlow()
+    private val _submitState = MutableStateFlow<UiState<SubmitOutcome>>(UiState.Idle)
+    val submitState: StateFlow<UiState<SubmitOutcome>> = _submitState.asStateFlow()
+
+    private val _pendingCount = MutableStateFlow(0)
+    /** How many reports are queued locally, not yet synced to the backend. */
+    val pendingCount: StateFlow<Int> = _pendingCount.asStateFlow()
 
     private val _deleteState = MutableStateFlow<UiState<Int>>(UiState.Idle)
     val deleteState: StateFlow<UiState<Int>> = _deleteState.asStateFlow()
@@ -41,9 +46,10 @@ class ReportsViewModel(private val reportsRepository: ReportsRepository) : ViewM
         _submitState.value = UiState.Loading
         viewModelScope.launch {
             _submitState.value = try {
-                val response = reportsRepository.submitReport(lat, lon, reportType, description.trim())
-                loadReports(lat, lon)
-                UiState.Success(response.points)
+                val outcome = reportsRepository.submitReport(lat, lon, reportType, description.trim())
+                if (outcome is SubmitOutcome.Submitted) loadReports(lat, lon)
+                refreshPendingCount()
+                UiState.Success(outcome)
             } catch (t: Throwable) {
                 UiState.Error(t.toUserMessage())
             }
@@ -52,6 +58,12 @@ class ReportsViewModel(private val reportsRepository: ReportsRepository) : ViewM
 
     fun resetSubmitState() {
         _submitState.value = UiState.Idle
+    }
+
+    fun refreshPendingCount() {
+        viewModelScope.launch {
+            _pendingCount.value = reportsRepository.pendingReportCount()
+        }
     }
 
     fun deleteReport(reportId: String, lat: Double, lon: Double) {

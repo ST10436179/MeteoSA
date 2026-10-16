@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.DataSaverOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Warning
@@ -166,6 +167,10 @@ private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: 
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
+        if (data.isFromCache) {
+            OfflineBanner()
+            Spacer(Modifier.height(12.dp))
+        }
         Text(locationLabel, style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -257,6 +262,26 @@ private fun NearbyReportsSection(reports: List<ReportDto>) {
     }
 }
 
+/** Shown when Home is serving the RoomDB weather cache because the live fetch failed - the
+ *  offline-first fallback from the Part 1 design doc. */
+@Composable
+private fun OfflineBanner() {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Filled.CloudOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                "You're offline - showing the last weather we saved on this device.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 @Composable
 private fun NearbyReportRow(report: ReportDto) {
     val typeLabel = ReportType.values().find { it.apiValue == report.reportType }?.label ?: report.reportType
@@ -310,6 +335,15 @@ private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData, nearby
             )
         }
         Spacer(Modifier.height(20.dp))
+
+        if (data.isFromCache) {
+            Text(
+                "Offline - showing last saved weather.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(Modifier.height(8.dp))
+        }
 
         Text(locationLabel, style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(4.dp))

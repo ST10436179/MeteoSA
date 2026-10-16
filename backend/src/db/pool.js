@@ -13,4 +13,11 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+// Without this, an idle pooled client being closed by Supabase's side (e.g. "terminating
+// connection due to administrator command") fires an unhandled 'error' event on the pool,
+// which Node treats as an uncaught exception and crashes the whole process.
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle database client:', err.message);
+});
+
 module.exports = pool;
