@@ -29,6 +29,10 @@
     <string name="home">Tuis</string>
     <string name="five_day_forecast">5-Dag-vooruitskatting</string>
     <string name="use_my_location">Gebruik my ligging</string>
+    <string name="saved_locations">Gestoorde Liggings</string>
+    <string name="save_current_location">Stoor huidige ligging</string>
+    <string name="location_name_placeholder">bv. Tuis, Werk</string>
+    <string name="no_saved_locations">Nog geen gestoorde liggings nie. Stoor jou huidige ligging om een by te voeg.</string>
     <string name="retry">Probeer weer</string>
     <string name="community_reports_nearby">Gemeenskapverslae naby jou</string>
     <string name="no_reports_nearby_home">Nog geen gemeenskapverslae naby jou nie. Maak die Verslae-oortjie oop om een by te voeg.</string>

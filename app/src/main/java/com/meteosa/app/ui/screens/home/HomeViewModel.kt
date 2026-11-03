@@ -3,6 +3,7 @@ package com.meteosa.app.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meteosa.app.data.local.db.CachedDailyForecast
+import com.meteosa.app.data.local.db.SavedLocationEntity
 import com.meteosa.app.data.local.db.WeatherCacheEntity
 import com.meteosa.app.data.remote.dto.CurrentWeatherResponse
 import com.meteosa.app.data.remote.dto.MainWeather
@@ -11,14 +12,17 @@ import com.meteosa.app.data.remote.dto.WeatherCondition
 import com.meteosa.app.data.remote.dto.Wind
 import com.meteosa.app.data.repository.DataSaverRepository
 import com.meteosa.app.data.repository.ReportsRepository
+import com.meteosa.app.data.repository.SavedLocationsRepository
 import com.meteosa.app.data.repository.WeatherRepository
 import com.meteosa.app.util.UiState
 import com.meteosa.app.util.toUserMessage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class HomeUiData(
@@ -31,7 +35,8 @@ data class HomeUiData(
 class HomeViewModel(
     private val weatherRepository: WeatherRepository,
     private val dataSaverRepository: DataSaverRepository,
-    private val reportsRepository: ReportsRepository
+    private val reportsRepository: ReportsRepository,
+    private val savedLocationsRepository: SavedLocationsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<HomeUiData>>(UiState.Idle)
@@ -39,6 +44,10 @@ class HomeViewModel(
 
     private val _locationLabel = MutableStateFlow("Johannesburg (default)")
     val locationLabel: StateFlow<String> = _locationLabel.asStateFlow()
+
+    /** User Defined feature (Part 3): named locations the user has saved for quick access. */
+    val savedLocations: StateFlow<List<SavedLocationEntity>> = savedLocationsRepository.savedLocations
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Nearby community reports for the Home dashboard. Intentionally a plain list rather than a
     // UiState: this is a secondary, best-effort widget on Home, not the screen's primary content,
@@ -69,14 +78,25 @@ class HomeViewModel(
         }
     }
 
-    fun loadWeather(lat: Double, lon: Double, usingDeviceLocation: Boolean) {
+    private var currentLat: Double = 0.0
+    private var currentLon: Double = 0.0
+
+    /** [savedLocationName], when set, overrides the geocoded city name in [locationLabel] - used
+     *  when the weather being shown is for a user-saved location rather than GPS/default. */
+    fun loadWeather(lat: Double, lon: Double, usingDeviceLocation: Boolean, savedLocationName: String? = null) {
+        currentLat = lat
+        currentLon = lon
         _uiState.value = UiState.Loading
         viewModelScope.launch {
             _uiState.value = try {
                 val current = weatherRepository.getCurrentWeather(lat, lon)
                 val forecast = weatherRepository.getForecast(lat, lon)
                 val daily = forecast.toDailyForecasts()
-                _locationLabel.value = if (usingDeviceLocation) current.name else "${current.name} (default)"
+                _locationLabel.value = when {
+                    savedLocationName != null -> savedLocationName
+                    usingDeviceLocation -> current.name
+                    else -> "${current.name} (default)"
+                }
                 weatherRepository.cacheWeather(toCacheEntity(current, daily))
                 UiState.Success(HomeUiData(current, daily, isFromCache = false))
             } catch (t: Throwable) {
@@ -98,6 +118,22 @@ class HomeViewModel(
                 emptyList()
             }
         }
+    }
+
+    fun saveCurrentLocation(name: String) {
+        viewModelScope.launch {
+            savedLocationsRepository.save(name, currentLat, currentLon)
+        }
+    }
+
+    fun deleteSavedLocation(location: SavedLocationEntity) {
+        viewModelScope.launch {
+            savedLocationsRepository.delete(location)
+        }
+    }
+
+    fun selectSavedLocation(location: SavedLocationEntity) {
+        loadWeather(location.latitude, location.longitude, usingDeviceLocation = false, savedLocationName = location.name)
     }
 }
 

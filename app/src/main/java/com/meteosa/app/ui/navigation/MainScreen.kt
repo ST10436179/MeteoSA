@@ -102,7 +102,8 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                 MainTab.HOME -> HomeScreen(
                     weatherRepository = container.weatherRepository,
                     dataSaverRepository = container.dataSaverRepository,
-                    reportsRepository = container.reportsRepository
+                    reportsRepository = container.reportsRepository,
+                    savedLocationsRepository = container.savedLocationsRepository
                 )
                 MainTab.REPORTS -> ReportsScreen(
                     reportsRepository = container.reportsRepository,

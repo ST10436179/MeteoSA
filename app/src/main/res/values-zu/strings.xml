@@ -29,6 +29,10 @@
     <string name="home">Ikhaya</string>
     <string name="five_day_forecast">Isibikezelo sezinsuku ezi-5</string>
     <string name="use_my_location">Sebenzisa indawo yami</string>
+    <string name="saved_locations">Izindawo Ezigciniwe</string>
+    <string name="save_current_location">Gcina indawo yamanje</string>
+    <string name="location_name_placeholder">isib. Ekhaya, Emsebenzini</string>
+    <string name="no_saved_locations">Azikho izindawo ezigciniwe okwamanje. Gcina indawo yakho yamanje ukuze wengeze enye.</string>
     <string name="retry">Zama futhi</string>
     <string name="community_reports_nearby">Imibiko yomphakathi eseduze</string>
     <string name="no_reports_nearby_home">Azikho imibiko yomphakathi eseduze okwamanje. Vula ithebhu yemibiko ukuze wengeze eyakho.</string>

@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,11 +22,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.DataSaverOn
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,14 +40,18 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -52,10 +62,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
 import com.meteosa.app.R
+import com.meteosa.app.data.local.db.SavedLocationEntity
 import com.meteosa.app.data.remote.dto.ReportDto
 import com.meteosa.app.data.remote.dto.ReportType
 import com.meteosa.app.data.repository.DataSaverRepository
 import com.meteosa.app.data.repository.ReportsRepository
+import com.meteosa.app.data.repository.SavedLocationsRepository
 import com.meteosa.app.data.repository.WeatherRepository
 import com.meteosa.app.ui.screens.reports.colorForReportType
 import com.meteosa.app.util.GenericViewModelFactory
@@ -72,15 +84,20 @@ private val SEVERE_CONDITION_IDS = (200..232) + listOf(502, 503, 504, 522, 531) 
 fun HomeScreen(
     weatherRepository: WeatherRepository,
     dataSaverRepository: DataSaverRepository,
-    reportsRepository: ReportsRepository
+    reportsRepository: ReportsRepository,
+    savedLocationsRepository: SavedLocationsRepository
 ) {
     val viewModel: HomeViewModel = viewModel(
-        factory = GenericViewModelFactory { HomeViewModel(weatherRepository, dataSaverRepository, reportsRepository) }
+        factory = GenericViewModelFactory {
+            HomeViewModel(weatherRepository, dataSaverRepository, reportsRepository, savedLocationsRepository)
+        }
     )
     val uiState by viewModel.uiState.collectAsState()
     val locationLabel by viewModel.locationLabel.collectAsState()
     val dataSaverActive by viewModel.dataSaverActive.collectAsState()
     val nearbyReports by viewModel.nearbyReports.collectAsState()
+    val savedLocations by viewModel.savedLocations.collectAsState()
+    var showSavedLocations by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
@@ -124,6 +141,9 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(onClick = { showSavedLocations = true }) {
+                        Icon(Icons.Filled.Place, contentDescription = stringResource(R.string.saved_locations))
+                    }
                     IconButton(onClick = { requestLocationAndLoad() }) {
                         Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.use_my_location))
                     }
@@ -131,6 +151,18 @@ fun HomeScreen(
             )
         }
     ) { padding ->
+        if (showSavedLocations) {
+            SavedLocationsDialog(
+                locations = savedLocations,
+                onDismiss = { showSavedLocations = false },
+                onSelect = { location ->
+                    viewModel.selectSavedLocation(location)
+                    showSavedLocations = false
+                },
+                onDelete = { location -> viewModel.deleteSavedLocation(location) },
+                onSaveCurrent = { name -> viewModel.saveCurrentLocation(name) }
+            )
+        }
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (val state = uiState) {
                 is UiState.Loading, UiState.Idle -> {
@@ -401,4 +433,86 @@ private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData, nearby
         }
         Spacer(Modifier.height(24.dp))
     }
+}
+
+/**
+ * User Defined feature (Part 3): lets the user save named locations (e.g. "Home", "Work") and
+ * switch between them instead of only GPS/the Johannesburg fallback - backed by RoomDB via
+ * SavedLocationsRepository, so the list persists across app restarts, offline included.
+ */
+@Composable
+private fun SavedLocationsDialog(
+    locations: List<SavedLocationEntity>,
+    onDismiss: () -> Unit,
+    onSelect: (SavedLocationEntity) -> Unit,
+    onDelete: (SavedLocationEntity) -> Unit,
+    onSaveCurrent: (String) -> Unit
+) {
+    var newName by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.saved_locations)) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = newName,
+                    onValueChange = { newName = it },
+                    label = { Text(stringResource(R.string.save_current_location)) },
+                    placeholder = { Text(stringResource(R.string.location_name_placeholder)) },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                if (newName.isNotBlank()) {
+                                    onSaveCurrent(newName.trim())
+                                    newName = ""
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.save_current_location))
+                        }
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(12.dp))
+                if (locations.isEmpty()) {
+                    Text(
+                        stringResource(R.string.no_saved_locations),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Column(modifier = Modifier.widthIn(max = 400.dp)) {
+                        locations.forEach { location ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onSelect(location) }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    location.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                                )
+                                IconButton(onClick = { onDelete(location) }) {
+                                    Icon(
+                                        Icons.Filled.Delete,
+                                        contentDescription = stringResource(R.string.delete),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                            HorizontalDivider()
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        }
+    )
 }
