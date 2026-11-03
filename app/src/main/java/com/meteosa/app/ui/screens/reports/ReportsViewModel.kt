@@ -1,7 +1,9 @@
 package com.meteosa.app.ui.screens.reports
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.meteosa.app.R
 import com.meteosa.app.data.remote.dto.ReportDto
 import com.meteosa.app.data.repository.ReportsRepository
 import com.meteosa.app.data.repository.SubmitOutcome
@@ -12,7 +14,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ReportsViewModel(private val reportsRepository: ReportsRepository) : ViewModel() {
+/** [appContext] is the application Context, used only to resolve localised validation strings. */
+class ReportsViewModel(
+    private val reportsRepository: ReportsRepository,
+    private val appContext: Context
+) : ViewModel() {
 
     private val _reportsState = MutableStateFlow<UiState<List<ReportDto>>>(UiState.Idle)
     val reportsState: StateFlow<UiState<List<ReportDto>>> = _reportsState.asStateFlow()
@@ -40,7 +46,7 @@ class ReportsViewModel(private val reportsRepository: ReportsRepository) : ViewM
 
     fun submitReport(lat: Double, lon: Double, reportType: String, description: String) {
         if (description.isBlank()) {
-            _submitState.value = UiState.Error("Please add a short description.")
+            _submitState.value = UiState.Error(appContext.getString(R.string.please_add_description))
             return
         }
         _submitState.value = UiState.Loading

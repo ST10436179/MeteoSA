@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.meteosa.app.R
 import kotlinx.coroutines.delay
 
 /**
@@ -46,7 +48,7 @@ fun SplashScreen(isLoggedIn: Boolean, onFinished: (loggedIn: Boolean) -> Unit) {
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "MeteoSA",
+                stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onPrimary
             )

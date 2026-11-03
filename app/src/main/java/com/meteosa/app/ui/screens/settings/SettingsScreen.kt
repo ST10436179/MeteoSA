@@ -1,5 +1,7 @@
 package com.meteosa.app.ui.screens.settings
 
+import android.app.Activity
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,21 +16,31 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.meteosa.app.R
+import com.meteosa.app.data.local.LocalePreferences
 import com.meteosa.app.data.local.SessionManager
 import com.meteosa.app.data.local.ThemePreferences
 import com.meteosa.app.data.repository.AuthRepository
@@ -58,7 +70,7 @@ fun SettingsScreen(
         return
     }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Settings") }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.settings)) }) }) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -90,12 +102,12 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.padding(start = 12.dp))
                             Column {
                                 Text(
-                                    badgeForPoints(session!!.points),
+                                    stringResource(badgeLabelRes(badgeTierForPoints(session!!.points))),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                                 Text(
-                                    "${session!!.points} points earned reporting weather impacts",
+                                    stringResource(R.string.points_earned, session!!.points),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
@@ -106,47 +118,40 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(24.dp))
-            Text("Preferences", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.preferences), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
 
             SettingsSwitchRow(
-                title = "Dark theme",
+                title = stringResource(R.string.dark_theme),
                 checked = darkTheme,
                 onCheckedChange = viewModel::setDarkTheme
             )
             HorizontalDivider()
             SettingsSwitchRow(
-                title = "Severe weather alerts",
+                title = stringResource(R.string.severe_weather_alerts),
                 checked = severeAlerts,
                 onCheckedChange = viewModel::setSevereAlertsEnabled
             )
             HorizontalDivider()
             SettingsSwitchRow(
-                title = "Daily forecast notifications",
+                title = stringResource(R.string.daily_forecast_notifications),
                 checked = dailyForecastNotifs,
                 onCheckedChange = viewModel::setDailyForecastNotifsEnabled
             )
             HorizontalDivider()
             SettingsSwitchRow(
-                title = "Force Data-Saver Mode",
+                title = stringResource(R.string.force_data_saver),
                 checked = forceDataSaver,
                 onCheckedChange = viewModel::setForceDataSaverEnabled
             )
             Text(
-                "Also switches on automatically on a restricted network or during load-shedding.",
+                stringResource(R.string.data_saver_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             HorizontalDivider()
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Language")
-                Text("English (isiZulu, Afrikaans in final release)", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            LanguageRow()
 
             Spacer(Modifier.height(32.dp))
             Button(
@@ -154,9 +159,46 @@ fun SettingsScreen(
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Log out")
+                Text(stringResource(R.string.logout))
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+/** Interactive language picker: persists the chosen tag and recreates the Activity to apply it. */
+@Composable
+private fun LanguageRow() {
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    val currentTag = remember { LocalePreferences.getLanguageTag(context) }
+    val currentLabel = LocalePreferences.SUPPORTED_LANGUAGES.firstOrNull { it.first == currentTag }?.second
+        ?: LocalePreferences.SUPPORTED_LANGUAGES.first().second
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(stringResource(R.string.language))
+        Box {
+            TextButton(onClick = { expanded = true }) {
+                Text(currentLabel)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                LocalePreferences.SUPPORTED_LANGUAGES.forEach { (tag, label) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            expanded = false
+                            if (tag != currentTag) {
+                                LocalePreferences.setLanguageTag(context, tag)
+                                (context as? Activity)?.recreate()
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 }

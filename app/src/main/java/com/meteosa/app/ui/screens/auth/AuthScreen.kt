@@ -37,11 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.meteosa.app.R
 import com.meteosa.app.data.repository.AuthRepository
 import com.meteosa.app.util.GenericViewModelFactory
 import com.meteosa.app.util.UiState
@@ -53,8 +56,9 @@ fun AuthScreen(
     authRepository: AuthRepository,
     onAuthenticated: () -> Unit
 ) {
+    val appContext = LocalContext.current.applicationContext
     val viewModel: AuthViewModel = viewModel(
-        factory = GenericViewModelFactory { AuthViewModel(authRepository) }
+        factory = GenericViewModelFactory { AuthViewModel(authRepository, appContext) }
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -91,17 +95,17 @@ fun AuthScreen(
                 modifier = Modifier.size(56.dp)
             )
             Spacer(Modifier.height(8.dp))
-            Text("MeteoSA", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
             Text(
-                "Hyper-local weather for South Africa",
+                stringResource(R.string.app_tagline),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(24.dp))
 
             TabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.fillMaxWidth()) {
-                Tab(selected = tab == AuthTab.LOGIN, onClick = { tab = AuthTab.LOGIN; viewModel.resetState() }, text = { Text("Login") })
-                Tab(selected = tab == AuthTab.REGISTER, onClick = { tab = AuthTab.REGISTER; viewModel.resetState() }, text = { Text("Register") })
+                Tab(selected = tab == AuthTab.LOGIN, onClick = { tab = AuthTab.LOGIN; viewModel.resetState() }, text = { Text(stringResource(R.string.login)) })
+                Tab(selected = tab == AuthTab.REGISTER, onClick = { tab = AuthTab.REGISTER; viewModel.resetState() }, text = { Text(stringResource(R.string.register)) })
             }
             Spacer(Modifier.height(24.dp))
 
@@ -109,7 +113,7 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = displayName,
                     onValueChange = { displayName = it },
-                    label = { Text("Display name") },
+                    label = { Text(stringResource(R.string.display_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -119,7 +123,7 @@ fun AuthScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth()
@@ -129,7 +133,7 @@ fun AuthScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.password)) },
                 singleLine = true,
                 visualTransformation = passwordVisibility(passwordVisible),
                 trailingIcon = { PasswordToggle(passwordVisible) { passwordVisible = !passwordVisible } },
@@ -142,7 +146,7 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { Text("Confirm password") },
+                    label = { Text(stringResource(R.string.confirm_password)) },
                     singleLine = true,
                     visualTransformation = passwordVisibility(passwordVisible),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -175,7 +179,7 @@ fun AuthScreen(
                 if (uiState is UiState.Loading) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
                 } else {
-                    Text(if (tab == AuthTab.LOGIN) "Login" else "Create account")
+                    Text(stringResource(if (tab == AuthTab.LOGIN) R.string.login else R.string.create_account))
                 }
             }
 
@@ -185,7 +189,7 @@ fun AuthScreen(
                 enabled = false,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Continue with Google (final release)")
+                Text(stringResource(R.string.continue_with_google))
             }
         }
     }
@@ -197,7 +201,8 @@ private fun passwordVisibility(visible: Boolean): VisualTransformation =
 @Composable
 private fun PasswordToggle(visible: Boolean, onToggle: () -> Unit) {
     val icon: ImageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
+    val description = stringResource(if (visible) R.string.hide_password else R.string.show_password)
     IconButton(onClick = onToggle) {
-        Icon(icon, contentDescription = if (visible) "Hide password" else "Show password")
+        Icon(icon, contentDescription = description)
     }
 }

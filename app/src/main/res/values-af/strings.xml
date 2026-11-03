@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">MeteoSA</string>
+    <string name="app_tagline">Plaaslike weer vir Suid-Afrika</string>
+
+    <!-- Auth -->
+    <string name="login">Teken in</string>
+    <string name="register">Registreer</string>
+    <string name="email">E-pos</string>
+    <string name="password">Wagwoord</string>
+    <string name="display_name">Vertoonnaam</string>
+    <string name="confirm_password">Bevestig wagwoord</string>
+    <string name="dont_have_account">Het jy nie \'n rekening nie? Registreer</string>
+    <string name="already_have_account">Het jy reeds \'n rekening? Teken in</string>
+    <string name="create_account">Skep rekening</string>
+    <string name="continue_with_google">Gaan voort met Google (finale weergawe)</string>
+    <string name="hide_password">Verberg wagwoord</string>
+    <string name="show_password">Wys wagwoord</string>
+
+    <!-- Auth errors -->
+    <string name="error_invalid_email">Voer \'n geldige e-posadres in.</string>
+    <string name="error_empty_password">Voer jou wagwoord in.</string>
+    <string name="error_empty_display_name">Voer \'n vertoonnaam in.</string>
+    <string name="error_password_too_short">Wagwoord moet ten minste 6 karakters wees.</string>
+    <string name="error_passwords_mismatch">Wagwoorde stem nie ooreen nie.</string>
+    <string name="error_incorrect_credentials">Verkeerde e-pos of wagwoord.</string>
+
+    <!-- Home -->
+    <string name="home">Tuis</string>
+    <string name="five_day_forecast">5-Dag-vooruitskatting</string>
+    <string name="use_my_location">Gebruik my ligging</string>
+    <string name="retry">Probeer weer</string>
+    <string name="community_reports_nearby">Gemeenskapverslae naby jou</string>
+    <string name="no_reports_nearby_home">Nog geen gemeenskapverslae naby jou nie. Maak die Verslae-oortjie oop om een by te voeg.</string>
+    <string name="offline_weather_banner">Jy is vanlyn - wys die laaste weer wat op hierdie toestel gestoor is.</string>
+    <string name="severe_weather_alert">Strawwe weer waarskuwing</string>
+    <string name="data_saver_banner">Data-spaarmodus is aan - ligte teksaansig om data te spaar.</string>
+    <string name="offline_last_saved">Vanlyn - wys laas gestoorde weer.</string>
+    <string name="no_reports_nearby_short">Nog geen gemeenskapverslae naby jou nie.</string>
+    <string name="temp_celsius">%1$d°C</string>
+    <string name="temp_range">%1$d°/%2$d°</string>
+    <string name="feels_like_template">Voel soos %1$d°C · Humiditeit %2$d%% · Wind %3$.2f m/s</string>
+    <string name="current_conditions_short">%1$d°C, %2$s</string>
+    <string name="nearby_report_row">%1$s: %2$s</string>
+
+    <!-- Report types -->
+    <string name="report_type_flood">Oorstroming</string>
+    <string name="report_type_hail">Hael</string>
+    <string name="report_type_wind">Sterk wind</string>
+    <string name="report_type_fire">Brand</string>
+    <string name="report_type_other">Ander</string>
+
+    <!-- Reports -->
+    <string name="community_reports">Gemeenskapverslae</string>
+    <string name="report_impact">Rapporteer \'n weerimpak</string>
+    <string name="report_type">Tipe</string>
+    <string name="description">Beskrywing</string>
+    <string name="description_placeholder">bv. Kniehoogte-oorstroming in Hoofstraat</string>
+    <string name="submit">Dien in</string>
+    <string name="cancel">Kanselleer</string>
+    <string name="delete">Verwyder</string>
+    <string name="delete_report_cd">Verwyder verslag</string>
+    <string name="delete_report_title">Verwyder hierdie verslag?</string>
+    <string name="delete_report_message">Dit verwyder ook die punte wat dit verdien het. Dit kan nie ongedaan gemaak word nie.</string>
+    <string name="no_reports_yet">Nog geen verslae naby jou nie. Wees die eerste om \'n weerimpak te rapporteer!</string>
+    <string name="community_member">Gemeenskapslid</string>
+    <string name="please_add_description">Voeg asseblief \'n kort beskrywing by.</string>
+    <plurals name="reports_waiting_to_sync">
+        <item quantity="one">%1$d verslag wag om te sinkroniseer</item>
+        <item quantity="other">%1$d verslae wag om te sinkroniseer</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings">Instellings</string>
+    <string name="preferences">Voorkeure</string>
+    <string name="dark_theme">Donker tema</string>
+    <string name="severe_weather_alerts">Strawwe weer waarskuwings</string>
+    <string name="daily_forecast_notifications">Daaglikse vooruitskattingkennisgewings</string>
+    <string name="force_data_saver">Forseer data-spaarmodus</string>
+    <string name="data_saver_hint">Skakel ook outomaties aan op \'n beperkte netwerk of tydens beurtkrag.</string>
+    <string name="language">Taal</string>
+    <string name="logout">Teken uit</string>
+    <string name="storm_chaser_points">Storm Chaser-punte</string>
+    <string name="points_earned">%1$d punte verdien deur weerimpakte te rapporteer</string>
+    <string name="badge_legend">Storm Chaser: Legende</string>
+    <string name="badge_veteran">Storm Chaser: Veteraan</string>
+    <string name="badge_scout">Storm Chaser: Verkenner</string>
+    <string name="badge_rookie">Storm Chaser: Beginner</string>
+    <string name="badge_none">Nog nie \'n Storm Chaser nie</string>
+
+    <!-- Main navigation / snackbars -->
+    <string name="nav_home">Tuis</string>
+    <string name="nav_reports">Verslae</string>
+    <string name="nav_settings">Instellings</string>
+    <string name="report_submitted_snackbar">Verslag ingedien! %1$s · %2$d punte</string>
+    <string name="report_deleted_snackbar">Verslag verwyder · %1$d punte</string>
+    <string name="offline_report_saved_snackbar">Jy is vanlyn - verslag gestoor en sal outomaties sinkroniseer.</string>
+</resources>

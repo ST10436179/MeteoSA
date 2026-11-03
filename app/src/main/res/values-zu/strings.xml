@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">MeteoSA</string>
+    <string name="app_tagline">Isimo sezulu eseduze, eNingizimu Afrika</string>
+
+    <!-- Auth -->
+    <string name="login">Ngena</string>
+    <string name="register">Bhalisa</string>
+    <string name="email">I-imeyili</string>
+    <string name="password">Iphasiwedi</string>
+    <string name="display_name">Igama elibonakalayo</string>
+    <string name="confirm_password">Qinisekisa iphasiwedi</string>
+    <string name="dont_have_account">Awunayo i-akhawunti? Bhalisa</string>
+    <string name="already_have_account">Usunayo i-akhawunti? Ngena</string>
+    <string name="create_account">Dala i-akhawunti</string>
+    <string name="continue_with_google">Qhubeka nge-Google (kuzotholakala ekugcineni)</string>
+    <string name="hide_password">Fihla iphasiwedi</string>
+    <string name="show_password">Bonisa iphasiwedi</string>
+
+    <!-- Auth errors -->
+    <string name="error_invalid_email">Faka ikheli le-imeyili elisebenzayo.</string>
+    <string name="error_empty_password">Faka iphasiwedi yakho.</string>
+    <string name="error_empty_display_name">Faka igama elibonakalayo.</string>
+    <string name="error_password_too_short">Iphasiwedi kumele ibe nezinhlamvu ezingu-6 noma ngaphezulu.</string>
+    <string name="error_passwords_mismatch">Amaphasiwedi awafani.</string>
+    <string name="error_incorrect_credentials">I-imeyili noma iphasiwedi engalungile.</string>
+
+    <!-- Home -->
+    <string name="home">Ikhaya</string>
+    <string name="five_day_forecast">Isibikezelo sezinsuku ezi-5</string>
+    <string name="use_my_location">Sebenzisa indawo yami</string>
+    <string name="retry">Zama futhi</string>
+    <string name="community_reports_nearby">Imibiko yomphakathi eseduze</string>
+    <string name="no_reports_nearby_home">Azikho imibiko yomphakathi eseduze okwamanje. Vula ithebhu yemibiko ukuze wengeze eyakho.</string>
+    <string name="offline_weather_banner">Awuxhunyiwe ku-inthanethi - kuboniswa isimo sezulu sokugcina esigciniwe kuleli divayisi.</string>
+    <string name="severe_weather_alert">Isixwayiso sesimo sezulu esinzima</string>
+    <string name="data_saver_banner">Imodi yokongeza idatha ivuliwe - umbukwa wombhalo olula ukonga idatha.</string>
+    <string name="offline_last_saved">Awuxhunyiwe - kuboniswa isimo sezulu sokugcina esigciniwe.</string>
+    <string name="no_reports_nearby_short">Azikho imibiko yomphakathi eseduze okwamanje.</string>
+    <string name="temp_celsius">%1$d°C</string>
+    <string name="temp_range">%1$d°/%2$d°</string>
+    <string name="feels_like_template">Kuzizwa njenge-%1$d°C · Umswakama %2$d%% · Umoya %3$.2f m/s</string>
+    <string name="current_conditions_short">%1$d°C, %2$s</string>
+    <string name="nearby_report_row">%1$s: %2$s</string>
+
+    <!-- Report types -->
+    <string name="report_type_flood">Isikhukhula</string>
+    <string name="report_type_hail">Isichotho</string>
+    <string name="report_type_wind">Umoya onamandla</string>
+    <string name="report_type_fire">Umlilo</string>
+    <string name="report_type_other">Okunye</string>
+
+    <!-- Reports -->
+    <string name="community_reports">Imibiko yomphakathi</string>
+    <string name="report_impact">Bika umthelela wesimo sezulu</string>
+    <string name="report_type">Uhlobo</string>
+    <string name="description">Incazelo</string>
+    <string name="description_placeholder">isib. Impophi yamanzi eze emadolweni e-Main Rd</string>
+    <string name="submit">Thumela</string>
+    <string name="cancel">Khansela</string>
+    <string name="delete">Susa</string>
+    <string name="delete_report_cd">Susa umbiko</string>
+    <string name="delete_report_title">Susa lo mbiko?</string>
+    <string name="delete_report_message">Lokhu kuphinde kususe namaphuzu akuzuzile. Lokhu ngeke kubuyiselwe.</string>
+    <string name="no_reports_yet">Azikho imibiko eduze kwakho okwamanje. Yiba ngowokuqala ukubika umthelela wesimo sezulu!</string>
+    <string name="community_member">Ilungu lomphakathi</string>
+    <string name="please_add_description">Sicela wengeze incazelo emfushane.</string>
+    <plurals name="reports_waiting_to_sync">
+        <item quantity="one">%1$d umbiko olindele ukuvumelaniswa</item>
+        <item quantity="other">%1$d imibiko elindele ukuvumelaniswa</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings">Izilungiselelo</string>
+    <string name="preferences">Okukhethwayo</string>
+    <string name="dark_theme">Indlela emnyama</string>
+    <string name="severe_weather_alerts">Izexwayiso zesimo sezulu esinzima</string>
+    <string name="daily_forecast_notifications">Izaziso zesibikezelo zansuku zonke</string>
+    <string name="force_data_saver">Phoqelela imodi yokongeza idatha</string>
+    <string name="data_saver_hint">Iphinde ivule ngokuzenzakalela kunethiwekhi enomkhawulo noma ngesikhathi sokucinywa kukagesi.</string>
+    <string name="language">Ulimi</string>
+    <string name="logout">Phuma</string>
+    <string name="storm_chaser_points">Amaphuzu e-Storm Chaser</string>
+    <string name="points_earned">Amaphuzu angu-%1$d azuziwe ngokubika imithelela yesimo sezulu</string>
+    <string name="badge_legend">Storm Chaser: Uqobo</string>
+    <string name="badge_veteran">Storm Chaser: Oyinhloko</string>
+    <string name="badge_scout">Storm Chaser: Isilondi</string>
+    <string name="badge_rookie">Storm Chaser: Osemusha</string>
+    <string name="badge_none">Awukabi ngu-Storm Chaser</string>
+
+    <!-- Main navigation / snackbars -->
+    <string name="nav_home">Ikhaya</string>
+    <string name="nav_reports">Imibiko</string>
+    <string name="nav_settings">Izilungiselelo</string>
+    <string name="report_submitted_snackbar">Umbiko uthunyelwe! %1$s · amaphuzu angu-%2$d</string>
+    <string name="report_deleted_snackbar">Umbiko ususiwe · amaphuzu angu-%1$d</string>
+    <string name="offline_report_saved_snackbar">Awuxhunyiwe ku-inthanethi - umbiko ugciniwe futhi uzovumelaniswa ngokuzenzakalela.</string>
+</resources>

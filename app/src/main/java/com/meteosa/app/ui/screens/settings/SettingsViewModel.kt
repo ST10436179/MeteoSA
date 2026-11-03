@@ -2,6 +2,7 @@ package com.meteosa.app.ui.screens.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.meteosa.app.R
 import com.meteosa.app.data.local.Session
 import com.meteosa.app.data.local.SessionManager
 import com.meteosa.app.data.local.ThemePreferences
@@ -44,10 +45,21 @@ class SettingsViewModel(
 }
 
 /** Simple "Storm Chaser" badge tiers based on accumulated community-report points. */
-fun badgeForPoints(points: Int): String = when {
-    points >= 500 -> "Storm Chaser: Legend"
-    points >= 200 -> "Storm Chaser: Veteran"
-    points >= 50 -> "Storm Chaser: Scout"
-    points > 0 -> "Storm Chaser: Rookie"
-    else -> "Not yet a Storm Chaser"
+enum class BadgeTier { LEGEND, VETERAN, SCOUT, ROOKIE, NONE }
+
+fun badgeTierForPoints(points: Int): BadgeTier = when {
+    points >= 500 -> BadgeTier.LEGEND
+    points >= 200 -> BadgeTier.VETERAN
+    points >= 50 -> BadgeTier.SCOUT
+    points > 0 -> BadgeTier.ROOKIE
+    else -> BadgeTier.NONE
+}
+
+/** String resource id for a badge tier's localised label. */
+fun badgeLabelRes(tier: BadgeTier): Int = when (tier) {
+    BadgeTier.LEGEND -> R.string.badge_legend
+    BadgeTier.VETERAN -> R.string.badge_veteran
+    BadgeTier.SCOUT -> R.string.badge_scout
+    BadgeTier.ROOKIE -> R.string.badge_rookie
+    BadgeTier.NONE -> R.string.badge_none
 }

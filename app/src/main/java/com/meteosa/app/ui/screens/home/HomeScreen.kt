@@ -45,11 +45,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
+import com.meteosa.app.R
 import com.meteosa.app.data.remote.dto.ReportDto
 import com.meteosa.app.data.remote.dto.ReportType
 import com.meteosa.app.data.repository.DataSaverRepository
@@ -120,10 +122,10 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("MeteoSA") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     IconButton(onClick = { requestLocationAndLoad() }) {
-                        Icon(Icons.Filled.MyLocation, contentDescription = "Use my location")
+                        Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.use_my_location))
                     }
                 }
             )
@@ -141,7 +143,7 @@ fun HomeScreen(
                     ) {
                         Text(state.message, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         Spacer(Modifier.height(12.dp))
-                        Button(onClick = { requestLocationAndLoad() }) { Text("Retry") }
+                        Button(onClick = { requestLocationAndLoad() }) { Text(stringResource(R.string.retry)) }
                     }
                 }
                 is UiState.Success -> {
@@ -175,7 +177,7 @@ private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: 
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "${current.main.temp.roundToInt()}°C",
+                stringResource(R.string.temp_celsius, current.main.temp.roundToInt()),
                 style = MaterialTheme.typography.headlineMedium
             )
             Spacer(Modifier.width(12.dp))
@@ -190,7 +192,12 @@ private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: 
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            "Feels like ${current.main.feelsLike.roundToInt()}°C · Humidity ${current.main.humidity}% · Wind ${current.wind.speed} m/s",
+            stringResource(
+                R.string.feels_like_template,
+                current.main.feelsLike.roundToInt(),
+                current.main.humidity,
+                current.wind.speed
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -205,7 +212,7 @@ private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: 
                     Icon(Icons.Filled.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer)
                     Spacer(Modifier.width(12.dp))
                     Column {
-                        Text("Severe Weather Alert", color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.severe_weather_alert), color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.titleMedium)
                         Text(
                             current.weather.first().description.replaceFirstChar { it.uppercase() },
                             color = MaterialTheme.colorScheme.onErrorContainer
@@ -216,7 +223,7 @@ private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: 
         }
 
         Spacer(Modifier.height(24.dp))
-        Text("5-Day Forecast", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.five_day_forecast), style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(8.dp))
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(data.daily) { day ->
@@ -229,7 +236,7 @@ private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: 
                         Spacer(Modifier.height(6.dp))
                         Text(weatherEmoji(day.icon), style = MaterialTheme.typography.titleLarge)
                         Spacer(Modifier.height(6.dp))
-                        Text("${day.maxTemp}°/${day.minTemp}°", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.temp_range, day.maxTemp, day.minTemp), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
@@ -247,11 +254,11 @@ private fun HomeContent(locationLabel: String, data: HomeUiData, nearbyReports: 
 @Composable
 private fun NearbyReportsSection(reports: List<ReportDto>) {
     Spacer(Modifier.height(28.dp))
-    Text("Community Reports Nearby", style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.community_reports_nearby), style = MaterialTheme.typography.titleMedium)
     Spacer(Modifier.height(8.dp))
     if (reports.isEmpty()) {
         Text(
-            "No community reports nearby yet. Open the Reports tab to add one.",
+            stringResource(R.string.no_reports_nearby_home),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -274,7 +281,7 @@ private fun OfflineBanner() {
             Icon(Icons.Filled.CloudOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.width(10.dp))
             Text(
-                "You're offline - showing the last weather we saved on this device.",
+                stringResource(R.string.offline_weather_banner),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -284,7 +291,8 @@ private fun OfflineBanner() {
 
 @Composable
 private fun NearbyReportRow(report: ReportDto) {
-    val typeLabel = ReportType.values().find { it.apiValue == report.reportType }?.label ?: report.reportType
+    val typeLabelRes = ReportType.values().find { it.apiValue == report.reportType }?.labelRes
+    val typeLabel = typeLabelRes?.let { stringResource(it) } ?: report.reportType
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -329,7 +337,7 @@ private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData, nearby
             Icon(Icons.Filled.DataSaverOn, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
             Spacer(Modifier.width(8.dp))
             Text(
-                "Data-Saver Mode is on - lightweight text view to save data.",
+                stringResource(R.string.data_saver_banner),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -338,7 +346,7 @@ private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData, nearby
 
         if (data.isFromCache) {
             Text(
-                "Offline - showing last saved weather.",
+                stringResource(R.string.offline_last_saved),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -348,16 +356,25 @@ private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData, nearby
         Text(locationLabel, style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(4.dp))
         Text(
-            "${current.main.temp.roundToInt()}°C, ${current.weather.firstOrNull()?.description ?: ""}",
+            stringResource(
+                R.string.current_conditions_short,
+                current.main.temp.roundToInt(),
+                current.weather.firstOrNull()?.description ?: ""
+            ),
             style = MaterialTheme.typography.headlineSmall
         )
         Text(
-            "Feels like ${current.main.feelsLike.roundToInt()}°C · Humidity ${current.main.humidity}% · Wind ${current.wind.speed} m/s",
+            stringResource(
+                R.string.feels_like_template,
+                current.main.feelsLike.roundToInt(),
+                current.main.humidity,
+                current.wind.speed
+            ),
             style = MaterialTheme.typography.bodyMedium
         )
 
         Spacer(Modifier.height(20.dp))
-        Text("5-Day Forecast", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.five_day_forecast), style = MaterialTheme.typography.titleMedium)
         HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
         data.daily.forEach { day ->
             Row(
@@ -365,19 +382,20 @@ private fun DataSaverHomeContent(locationLabel: String, data: HomeUiData, nearby
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(day.dayLabel, style = MaterialTheme.typography.bodyLarge)
-                Text("${day.maxTemp}° / ${day.minTemp}°", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.temp_range, day.maxTemp, day.minTemp), style = MaterialTheme.typography.bodyLarge)
             }
         }
 
         Spacer(Modifier.height(20.dp))
-        Text("Community Reports Nearby", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.community_reports_nearby), style = MaterialTheme.typography.titleMedium)
         HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
         if (nearbyReports.isEmpty()) {
-            Text("No community reports nearby yet.", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.no_reports_nearby_short), style = MaterialTheme.typography.bodyMedium)
         } else {
             nearbyReports.forEach { report ->
-                val typeLabel = ReportType.values().find { it.apiValue == report.reportType }?.label ?: report.reportType
-                Text("$typeLabel: ${report.description}", style = MaterialTheme.typography.bodyMedium)
+                val typeLabelRes = ReportType.values().find { it.apiValue == report.reportType }?.labelRes
+                val typeLabel = typeLabelRes?.let { stringResource(it) } ?: report.reportType
+                Text(stringResource(R.string.nearby_report_row, typeLabel, report.description), style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(4.dp))
             }
         }

@@ -76,7 +76,7 @@ fun ReportsMapView(
                 marker.position = GeoPoint(report.latitude, report.longitude)
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                 marker.icon = dotDrawable(colorForReportType(report.reportType).toArgb())
-                marker.title = typeLabels[report.reportType]?.label ?: report.reportType
+                marker.title = typeLabels[report.reportType]?.labelRes?.let { context.getString(it) } ?: report.reportType
                 marker.snippet = report.description
                 mapView.overlays.add(marker)
             }

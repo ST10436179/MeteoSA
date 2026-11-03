@@ -51,10 +51,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
+import com.meteosa.app.R
 import com.meteosa.app.data.remote.dto.ReportDto
 import com.meteosa.app.data.remote.dto.ReportType
 import com.meteosa.app.data.repository.ReportsRepository
@@ -75,7 +78,8 @@ fun ReportsScreen(
     onReportDeleted: (Int) -> Unit,
     onReportQueuedOffline: () -> Unit
 ) {
-    val viewModel: ReportsViewModel = viewModel(factory = GenericViewModelFactory { ReportsViewModel(reportsRepository) })
+    val appContext = LocalContext.current.applicationContext
+    val viewModel: ReportsViewModel = viewModel(factory = GenericViewModelFactory { ReportsViewModel(reportsRepository, appContext) })
     val reportsState by viewModel.reportsState.collectAsState()
     val submitState by viewModel.submitState.collectAsState()
     val deleteState by viewModel.deleteState.collectAsState()
@@ -149,10 +153,10 @@ fun ReportsScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Community Reports") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.community_reports)) }) },
         floatingActionButton = {
             FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Filled.Add, contentDescription = "Report a weather impact")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.report_impact))
             }
         }
     ) { padding ->
@@ -189,7 +193,7 @@ fun ReportsScreen(
                             is UiState.Success -> {
                                 if (state.data.isEmpty()) {
                                     Text(
-                                        "No reports near you yet. Be the first to report a weather impact!",
+                                        stringResource(R.string.no_reports_yet),
                                         modifier = Modifier.align(Alignment.Center).padding(24.dp)
                                     )
                                 } else {
@@ -233,8 +237,8 @@ fun ReportsScreen(
     reportPendingDelete?.let { report ->
         AlertDialog(
             onDismissRequest = { reportPendingDelete = null },
-            title = { Text("Delete this report?") },
-            text = { Text("This also removes the points it earned. This can't be undone.") },
+            title = { Text(stringResource(R.string.delete_report_title)) },
+            text = { Text(stringResource(R.string.delete_report_message)) },
             confirmButton = {
                 TextButton(
                     enabled = deleteState !is UiState.Loading,
@@ -242,10 +246,10 @@ fun ReportsScreen(
                         viewModel.deleteReport(report.reportId, deviceLat, deviceLon)
                         reportPendingDelete = null
                     }
-                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                ) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
-                TextButton(onClick = { reportPendingDelete = null }) { Text("Cancel") }
+                TextButton(onClick = { reportPendingDelete = null }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -269,7 +273,7 @@ private fun ReportsLegend() {
                         .background(colorForReportType(type.apiValue), CircleShape)
                 )
                 Spacer(Modifier.width(4.dp))
-                Text(type.label, style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(type.labelRes), style = MaterialTheme.typography.labelSmall)
             }
         }
     }
@@ -292,14 +296,15 @@ private fun PendingSyncBanner(pendingCount: Int) {
             modifier = Modifier.size(16.dp)
         )
         Spacer(Modifier.width(6.dp))
-        val label = if (pendingCount == 1) "1 report waiting to sync" else "$pendingCount reports waiting to sync"
+        val label = pluralStringResource(R.plurals.reports_waiting_to_sync, pendingCount, pendingCount)
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 private fun ReportCard(report: ReportDto, isOwnReport: Boolean, onDeleteClick: () -> Unit) {
-    val typeLabel = ReportType.values().find { it.apiValue == report.reportType }?.label ?: report.reportType
+    val typeLabelRes = ReportType.values().find { it.apiValue == report.reportType }?.labelRes
+    val typeLabel = typeLabelRes?.let { stringResource(it) } ?: report.reportType
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -312,7 +317,7 @@ private fun ReportCard(report: ReportDto, isOwnReport: Boolean, onDeleteClick: (
                 Text(typeLabel, style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "· ${report.displayName ?: "Community member"}",
+                    "· ${report.displayName ?: stringResource(R.string.community_member)}",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -321,7 +326,7 @@ private fun ReportCard(report: ReportDto, isOwnReport: Boolean, onDeleteClick: (
                     IconButton(onClick = onDeleteClick, modifier = Modifier.size(28.dp)) {
                         Icon(
                             Icons.Filled.Delete,
-                            contentDescription = "Delete report",
+                            contentDescription = stringResource(R.string.delete_report_cd),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
@@ -353,21 +358,21 @@ private fun SubmitReportDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Report a weather impact") },
+        title = { Text(stringResource(R.string.report_impact)) },
         text = {
             Column {
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
                     OutlinedTextField(
-                        value = selectedType.label,
+                        value = stringResource(selectedType.labelRes),
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Type") },
+                        label = { Text(stringResource(R.string.report_type)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier.fillMaxWidth().menuAnchor()
                     )
                     ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         ReportType.values().forEach { type ->
-                            DropdownMenuItem(text = { Text(type.label) }, onClick = { selectedType = type; expanded = false })
+                            DropdownMenuItem(text = { Text(stringResource(type.labelRes)) }, onClick = { selectedType = type; expanded = false })
                         }
                     }
                 }
@@ -375,8 +380,8 @@ private fun SubmitReportDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Description") },
-                    placeholder = { Text("e.g. Knee-deep flooding on Main Rd") },
+                    label = { Text(stringResource(R.string.description)) },
+                    placeholder = { Text(stringResource(R.string.description_placeholder)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (errorMessage != null) {
@@ -390,10 +395,10 @@ private fun SubmitReportDialog(
                 if (isSubmitting) {
                     CircularProgressIndicator(modifier = Modifier.height(16.dp))
                 } else {
-                    Text("Submit")
+                    Text(stringResource(R.string.submit))
                 }
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }

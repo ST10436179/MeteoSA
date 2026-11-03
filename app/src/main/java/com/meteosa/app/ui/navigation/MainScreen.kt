@@ -21,14 +21,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.meteosa.app.R
 import com.meteosa.app.di.AppContainer
 import com.meteosa.app.ui.screens.home.HomeScreen
 import com.meteosa.app.ui.screens.reports.ReportsScreen
 import com.meteosa.app.ui.screens.settings.SettingsScreen
-import com.meteosa.app.ui.screens.settings.badgeForPoints
+import com.meteosa.app.ui.screens.settings.badgeLabelRes
+import com.meteosa.app.ui.screens.settings.badgeTierForPoints
 import kotlinx.coroutines.launch
 
-private enum class MainTab(val label: String) { HOME("Home"), REPORTS("Reports"), SETTINGS("Settings") }
+private enum class MainTab { HOME, REPORTS, SETTINGS }
 
 @Composable
 fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
@@ -36,6 +40,7 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val session by container.sessionManager.session.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -45,19 +50,19 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                     selected = tab == MainTab.HOME,
                     onClick = { tab = MainTab.HOME },
                     icon = { Icon(Icons.Filled.Home, contentDescription = null) },
-                    label = { Text("Home") }
+                    label = { Text(stringResource(R.string.nav_home)) }
                 )
                 NavigationBarItem(
                     selected = tab == MainTab.REPORTS,
                     onClick = { tab = MainTab.REPORTS },
                     icon = { Icon(Icons.Filled.Warning, contentDescription = null) },
-                    label = { Text("Reports") }
+                    label = { Text(stringResource(R.string.nav_reports)) }
                 )
                 NavigationBarItem(
                     selected = tab == MainTab.SETTINGS,
                     onClick = { tab = MainTab.SETTINGS },
                     icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
-                    label = { Text("Settings") }
+                    label = { Text(stringResource(R.string.nav_settings)) }
                 )
             }
         }
@@ -75,20 +80,23 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                     onPointsAwarded = { totalPoints ->
                         container.sessionManager.updatePoints(totalPoints)
                         coroutineScope.launch {
+                            val badgeLabel = context.getString(badgeLabelRes(badgeTierForPoints(totalPoints)))
                             snackbarHostState.showSnackbar(
-                                "Report submitted! ${badgeForPoints(totalPoints)} · $totalPoints points"
+                                context.getString(R.string.report_submitted_snackbar, badgeLabel, totalPoints)
                             )
                         }
                     },
                     onReportDeleted = { totalPoints ->
                         container.sessionManager.updatePoints(totalPoints)
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Report deleted · $totalPoints points")
+                            snackbarHostState.showSnackbar(
+                                context.getString(R.string.report_deleted_snackbar, totalPoints)
+                            )
                         }
                     },
                     onReportQueuedOffline = {
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("You're offline - report saved and will sync automatically.")
+                            snackbarHostState.showSnackbar(context.getString(R.string.offline_report_saved_snackbar))
                         }
                     }
                 )

@@ -1,14 +1,15 @@
 package com.meteosa.app.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
+import com.meteosa.app.R
 
 /** The report types the backend accepts; kept in sync with backend/src/routes/reports.js */
-enum class ReportType(val apiValue: String, val label: String) {
-    FLOOD("flood", "Flooding"),
-    HAIL("hail", "Hail"),
-    WIND("wind", "Strong wind"),
-    FIRE("fire", "Fire"),
-    OTHER("other", "Other")
+enum class ReportType(val apiValue: String, val labelRes: Int) {
+    FLOOD("flood", R.string.report_type_flood),
+    HAIL("hail", R.string.report_type_hail),
+    WIND("wind", R.string.report_type_wind),
+    FIRE("fire", R.string.report_type_fire),
+    OTHER("other", R.string.report_type_other)
 }
 
 data class ReportRequest(

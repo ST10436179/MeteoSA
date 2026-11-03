@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">MeteoSA</string>
+    <string name="app_tagline">Hyper-local weather for South Africa</string>
 
     <!-- Auth -->
     <string name="login">Login</string>
@@ -10,24 +11,87 @@
     <string name="confirm_password">Confirm password</string>
     <string name="dont_have_account">Don\'t have an account? Register</string>
     <string name="already_have_account">Already have an account? Login</string>
+    <string name="create_account">Create account</string>
+    <string name="continue_with_google">Continue with Google (final release)</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+
+    <!-- Auth errors -->
+    <string name="error_invalid_email">Enter a valid email address.</string>
+    <string name="error_empty_password">Enter your password.</string>
+    <string name="error_empty_display_name">Enter a display name.</string>
+    <string name="error_password_too_short">Password must be at least 6 characters.</string>
+    <string name="error_passwords_mismatch">Passwords do not match.</string>
+    <string name="error_incorrect_credentials">Incorrect email or password.</string>
 
     <!-- Home -->
     <string name="home">Home</string>
     <string name="five_day_forecast">5-Day Forecast</string>
     <string name="use_my_location">Use my location</string>
+    <string name="retry">Retry</string>
+    <string name="community_reports_nearby">Community Reports Nearby</string>
+    <string name="no_reports_nearby_home">No community reports nearby yet. Open the Reports tab to add one.</string>
+    <string name="offline_weather_banner">You\'re offline - showing the last weather we saved on this device.</string>
+    <string name="severe_weather_alert">Severe Weather Alert</string>
+    <string name="data_saver_banner">Data-Saver Mode is on - lightweight text view to save data.</string>
+    <string name="offline_last_saved">Offline - showing last saved weather.</string>
+    <string name="no_reports_nearby_short">No community reports nearby yet.</string>
+    <string name="temp_celsius">%1$d°C</string>
+    <string name="temp_range">%1$d°/%2$d°</string>
+    <string name="feels_like_template">Feels like %1$d°C · Humidity %2$d%% · Wind %3$.2f m/s</string>
+    <string name="current_conditions_short">%1$d°C, %2$s</string>
+    <string name="nearby_report_row">%1$s: %2$s</string>
+
+    <!-- Report types -->
+    <string name="report_type_flood">Flooding</string>
+    <string name="report_type_hail">Hail</string>
+    <string name="report_type_wind">Strong wind</string>
+    <string name="report_type_fire">Fire</string>
+    <string name="report_type_other">Other</string>
 
     <!-- Reports -->
     <string name="community_reports">Community Reports</string>
     <string name="report_impact">Report a weather impact</string>
     <string name="report_type">Type</string>
     <string name="description">Description</string>
+    <string name="description_placeholder">e.g. Knee-deep flooding on Main Rd</string>
     <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="delete_report_cd">Delete report</string>
+    <string name="delete_report_title">Delete this report?</string>
+    <string name="delete_report_message">This also removes the points it earned. This can\'t be undone.</string>
+    <string name="no_reports_yet">No reports near you yet. Be the first to report a weather impact!</string>
+    <string name="community_member">Community member</string>
+    <string name="please_add_description">Please add a short description.</string>
+    <plurals name="reports_waiting_to_sync">
+        <item quantity="one">%1$d report waiting to sync</item>
+        <item quantity="other">%1$d reports waiting to sync</item>
+    </plurals>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
+    <string name="preferences">Preferences</string>
     <string name="dark_theme">Dark theme</string>
     <string name="severe_weather_alerts">Severe weather alerts</string>
     <string name="daily_forecast_notifications">Daily forecast notifications</string>
+    <string name="force_data_saver">Force Data-Saver Mode</string>
+    <string name="data_saver_hint">Also switches on automatically on a restricted network or during load-shedding.</string>
+    <string name="language">Language</string>
     <string name="logout">Log out</string>
     <string name="storm_chaser_points">Storm Chaser points</string>
+    <string name="points_earned">%1$d points earned reporting weather impacts</string>
+    <string name="badge_legend">Storm Chaser: Legend</string>
+    <string name="badge_veteran">Storm Chaser: Veteran</string>
+    <string name="badge_scout">Storm Chaser: Scout</string>
+    <string name="badge_rookie">Storm Chaser: Rookie</string>
+    <string name="badge_none">Not yet a Storm Chaser</string>
+
+    <!-- Main navigation / snackbars -->
+    <string name="nav_home">Home</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_settings">Settings</string>
+    <string name="report_submitted_snackbar">Report submitted! %1$s · %2$d points</string>
+    <string name="report_deleted_snackbar">Report deleted · %1$d points</string>
+    <string name="offline_report_saved_snackbar">You\'re offline - report saved and will sync automatically.</string>
 </resources>
