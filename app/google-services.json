@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "750559635923",
+    "project_id": "meteosa",
+    "storage_bucket": "meteosa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750559635923:android:6fce8cd1598ae310f16726",
+        "android_client_info": {
+          "package_name": "com.meteosa.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750559635923-rq5b500jusmaftjn83qfflk0pth4ag3q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.meteosa.app",
+            "certificate_hash": "8c85b42d1286c253b896d4fcf2f2a418a0eafd40"
+          }
+        },
+        {
+          "client_id": "750559635923-jj66kc4bu8uq3fajfhhap84nqqgkfuh8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHHwOnuWTugddvZAAYNx128EXVEg1Mf_o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750559635923-jj66kc4bu8uq3fajfhhap84nqqgkfuh8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

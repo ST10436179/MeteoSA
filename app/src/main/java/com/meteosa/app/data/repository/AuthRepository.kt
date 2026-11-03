@@ -2,6 +2,7 @@ package com.meteosa.app.data.repository
 
 import com.meteosa.app.data.local.SessionManager
 import com.meteosa.app.data.remote.BackendApi
+import com.meteosa.app.data.remote.dto.GoogleLoginRequest
 import com.meteosa.app.data.remote.dto.LoginRequest
 import com.meteosa.app.data.remote.dto.RegisterRequest
 
@@ -24,6 +25,13 @@ class AuthRepository(
 
     suspend fun login(email: String, password: String) {
         val response = api.login(LoginRequest(email, password))
+        sessionManager.save(response.token, response.user)
+    }
+
+    /** SSO (Part 3): [idToken] is a Google-issued ID token from Credential Manager, verified
+     *  server-side against Google's public keys before any session is created. */
+    suspend fun loginWithGoogle(idToken: String) {
+        val response = api.loginWithGoogle(GoogleLoginRequest(idToken))
         sessionManager.save(response.token, response.user)
     }
 

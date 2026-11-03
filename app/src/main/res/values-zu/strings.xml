@@ -12,7 +12,7 @@
     <string name="dont_have_account">Awunayo i-akhawunti? Bhalisa</string>
     <string name="already_have_account">Usunayo i-akhawunti? Ngena</string>
     <string name="create_account">Dala i-akhawunti</string>
-    <string name="continue_with_google">Qhubeka nge-Google (kuzotholakala ekugcineni)</string>
+    <string name="continue_with_google">Qhubeka nge-Google</string>
     <string name="hide_password">Fihla iphasiwedi</string>
     <string name="show_password">Bonisa iphasiwedi</string>
 
@@ -23,6 +23,7 @@
     <string name="error_password_too_short">Iphasiwedi kumele ibe nezinhlamvu ezingu-6 noma ngaphezulu.</string>
     <string name="error_passwords_mismatch">Amaphasiwedi awafani.</string>
     <string name="error_incorrect_credentials">I-imeyili noma iphasiwedi engalungile.</string>
+    <string name="error_google_sign_in_failed">Ayikwazanga ukungena nge-Google. Sicela uzame futhi.</string>
 
     <!-- Home -->
     <string name="home">Ikhaya</string>

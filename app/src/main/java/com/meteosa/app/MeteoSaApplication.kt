@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.meteosa.app.data.sync.ReportSyncWorker
 import com.meteosa.app.di.AppContainer
+import com.meteosa.app.notifications.ensureNotificationChannel
 
 class MeteoSaApplication : Application() {
 
@@ -14,6 +15,7 @@ class MeteoSaApplication : Application() {
         super.onCreate()
         container = AppContainer(this)
         ReportSyncWorker.schedulePeriodic(this)
+        ensureNotificationChannel(this)
         Log.i(TAG, "MeteoSA application started (backend=${BuildConfig.BACKEND_BASE_URL})")
     }
 

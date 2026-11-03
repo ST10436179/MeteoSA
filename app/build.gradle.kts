@@ -5,6 +5,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 // Read secrets/config out of local.properties (never committed) so they end up in
@@ -102,6 +103,8 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    // .await() extension for Google Play Services / Firebase Task<T> (FCM token fetch, etc.)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 
     // Secure local storage for the JWT session token
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
@@ -123,6 +126,18 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    // SSO (Part 3): Credential Manager is the modern replacement for the deprecated
+    // GoogleSignInClient API, backed by the Google ID provider library below. We send the raw
+    // Google ID token to our own backend for verification, rather than routing through Firebase
+    // Authentication, so no separate service-account credential is needed server-side.
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    // Push notifications (Part 3): Firebase Cloud Messaging.
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
 
     // Unit testing
     testImplementation("junit:junit:4.13.2")

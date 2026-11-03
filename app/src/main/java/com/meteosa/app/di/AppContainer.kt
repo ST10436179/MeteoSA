@@ -11,6 +11,7 @@ import com.meteosa.app.data.remote.WeatherApi
 import com.meteosa.app.data.repository.AuthRepository
 import com.meteosa.app.data.repository.DataSaverRepository
 import com.meteosa.app.data.repository.LoadSheddingRepository
+import com.meteosa.app.data.repository.NotificationsRepository
 import com.meteosa.app.data.repository.ReportsRepository
 import com.meteosa.app.data.repository.WeatherRepository
 import okhttp3.OkHttpClient
@@ -81,6 +82,7 @@ class AppContainer(context: Context) {
         database.pendingReportDao()
     )
     val weatherRepository = WeatherRepository(weatherApi, database.weatherCacheDao())
+    val notificationsRepository = NotificationsRepository(backendApi, sessionManager)
     val dataSaverRepository = DataSaverRepository(
         appContext = context.applicationContext,
         themePreferences = themePreferences,

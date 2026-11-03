@@ -7,4 +7,7 @@ plugins {
     // can't be avoided the way Hilt's DI generation was (see AppContainer.kt for why we dodge
     // annotation processors where we can; Room doesn't offer a reflection-only alternative).
     id("com.google.devtools.ksp") version "1.9.24-1.0.20" apply false
+    // SSO (Part 3) and push notifications (Part 3): reads app/google-services.json and wires up
+    // the Firebase project id/API key/OAuth client ids as BuildConfig/resources.
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }

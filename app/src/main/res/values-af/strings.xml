@@ -12,7 +12,7 @@
     <string name="dont_have_account">Het jy nie \'n rekening nie? Registreer</string>
     <string name="already_have_account">Het jy reeds \'n rekening? Teken in</string>
     <string name="create_account">Skep rekening</string>
-    <string name="continue_with_google">Gaan voort met Google (finale weergawe)</string>
+    <string name="continue_with_google">Gaan voort met Google</string>
     <string name="hide_password">Verberg wagwoord</string>
     <string name="show_password">Wys wagwoord</string>
 
@@ -23,6 +23,7 @@
     <string name="error_password_too_short">Wagwoord moet ten minste 6 karakters wees.</string>
     <string name="error_passwords_mismatch">Wagwoorde stem nie ooreen nie.</string>
     <string name="error_incorrect_credentials">Verkeerde e-pos of wagwoord.</string>
+    <string name="error_google_sign_in_failed">Kon nie met Google aanmeld nie. Probeer asseblief weer.</string>
 
     <!-- Home -->
     <string name="home">Tuis</string>

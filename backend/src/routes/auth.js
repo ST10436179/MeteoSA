@@ -1,10 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const pool = require('../db/pool');
 
 const router = express.Router();
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const googleClient = new OAuth2Client(process.env.GOOGLE_WEB_CLIENT_ID);
 
 function toUserDto(row) {
     return {
@@ -84,6 +86,60 @@ router.post('/login', async (req, res) => {
     } catch (err) {
         console.error('Login failed:', err);
         res.status(500).json({ error: 'Could not log in. Please try again.' });
+    }
+});
+
+// POST /api/auth/google
+// SSO (Part 3): the Android app gets a Google ID token via Credential Manager and sends it
+// here. We verify it against Google's own public keys (so it's cryptographically confirmed to
+// have been issued by Google for this project's web client id, not something the client could
+// forge), then find-or-create the user by the verified email and issue our usual session JWT -
+// from this point on a Google-signed-in user is indistinguishable from an email/password one.
+router.post('/google', async (req, res) => {
+    const { idToken } = req.body || {};
+    if (!idToken) {
+        return res.status(400).json({ error: 'A Google ID token is required.' });
+    }
+
+    let payload;
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_WEB_CLIENT_ID
+        });
+        payload = ticket.getPayload();
+    } catch (err) {
+        console.error('Google ID token verification failed:', err.message);
+        return res.status(401).json({ error: 'Could not verify Google sign-in. Please try again.' });
+    }
+
+    if (!payload?.email || !payload.email_verified) {
+        return res.status(401).json({ error: 'Your Google account email could not be verified.' });
+    }
+
+    try {
+        const email = payload.email.toLowerCase();
+        const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+        let row;
+        if (existing.rowCount > 0) {
+            row = existing.rows[0];
+        } else {
+            const displayName = payload.name || email.split('@')[0];
+            const inserted = await pool.query(
+                `INSERT INTO users (email, password_hash, display_name)
+                 VALUES ($1, NULL, $2)
+                 RETURNING user_id, email, display_name, preferred_language, points`,
+                [email, displayName]
+            );
+            row = inserted.rows[0];
+        }
+
+        const user = toUserDto(row);
+        res.json({ token: signToken(user.userId), user });
+    } catch (err) {
+        console.error('Google sign-in failed:', err);
+        res.status(500).json({ error: 'Could not sign in with Google. Please try again.' });
     }
 });
 

@@ -32,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,11 +44,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.meteosa.app.R
+import com.meteosa.app.auth.requestGoogleIdToken
 import com.meteosa.app.data.repository.AuthRepository
 import com.meteosa.app.util.GenericViewModelFactory
 import com.meteosa.app.util.UiState
+import kotlinx.coroutines.launch
 
 private enum class AuthTab { LOGIN, REGISTER }
 
@@ -56,11 +60,13 @@ fun AuthScreen(
     authRepository: AuthRepository,
     onAuthenticated: () -> Unit
 ) {
-    val appContext = LocalContext.current.applicationContext
+    val activityContext = LocalContext.current
+    val appContext = activityContext.applicationContext
     val viewModel: AuthViewModel = viewModel(
         factory = GenericViewModelFactory { AuthViewModel(authRepository, appContext) }
     )
     val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     var tab by rememberSaveable { mutableStateOf(AuthTab.LOGIN) }
     var email by rememberSaveable { mutableStateOf("") }
@@ -185,8 +191,19 @@ fun AuthScreen(
 
             Spacer(Modifier.height(12.dp))
             OutlinedButton(
-                onClick = { /* SSO ships in the final PoE release */ },
-                enabled = false,
+                onClick = {
+                    coroutineScope.launch {
+                        try {
+                            val idToken = requestGoogleIdToken(activityContext)
+                            viewModel.loginWithGoogle(idToken)
+                        } catch (e: GetCredentialCancellationException) {
+                            // The user closed the account picker - not an error worth showing.
+                        } catch (e: Exception) {
+                            viewModel.setError(appContext.getString(R.string.error_google_sign_in_failed))
+                        }
+                    }
+                },
+                enabled = uiState !is UiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.continue_with_google))

@@ -13,6 +13,16 @@ data class LoginRequest(
     val password: String
 )
 
+/** SSO (Part 3): sent after Credential Manager returns a Google-issued ID token. */
+data class GoogleLoginRequest(
+    @SerializedName("idToken") val idToken: String
+)
+
+/** Push notifications (Part 3): the device's current Firebase Cloud Messaging token. */
+data class FcmTokenRequest(
+    val token: String
+)
+
 data class AuthResponse(
     val token: String,
     val user: UserDto

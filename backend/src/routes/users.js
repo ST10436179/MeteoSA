@@ -22,4 +22,21 @@ router.get('/profile', requireAuth, async (req, res) => {
     }
 });
 
+// PUT /api/users/fcm-token
+// Push notifications (Part 3): called whenever the app obtains a fresh FCM token (first launch,
+// or FirebaseMessagingService.onNewToken firing after a token rotation).
+router.put('/fcm-token', requireAuth, async (req, res) => {
+    const { token } = req.body || {};
+    if (!token) {
+        return res.status(400).json({ error: 'A token is required.' });
+    }
+    try {
+        await pool.query('UPDATE users SET fcm_token = $1 WHERE user_id = $2', [token, req.userId]);
+        res.status(204).send();
+    } catch (err) {
+        console.error('Save FCM token failed:', err);
+        res.status(500).json({ error: 'Could not save push notification token.' });
+    }
+});
+
 module.exports = router;

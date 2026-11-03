@@ -82,6 +82,24 @@ class AuthViewModel(
         }
     }
 
+    /** SSO (Part 3): [idToken] has already been obtained from Credential Manager by the caller
+     *  (AuthScreen), since fetching it requires an Activity context this ViewModel doesn't have. */
+    fun loginWithGoogle(idToken: String) {
+        _uiState.value = UiState.Loading
+        viewModelScope.launch {
+            _uiState.value = try {
+                authRepository.loginWithGoogle(idToken)
+                UiState.Success(Unit)
+            } catch (t: Throwable) {
+                UiState.Error(t.toUserMessage())
+            }
+        }
+    }
+
+    fun setError(message: String) {
+        _uiState.value = UiState.Error(message)
+    }
+
     fun resetState() {
         _uiState.value = UiState.Idle
     }

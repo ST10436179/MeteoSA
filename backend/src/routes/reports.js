@@ -2,10 +2,14 @@ const express = require('express');
 const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
 const { haversineKm } = require('../util/geo');
+const { sendPushToToken } = require('../push/sendPush');
 
 const router = express.Router();
 
 const ALLOWED_TYPES = new Set(['flood', 'hail', 'wind', 'fire', 'other']);
+// Real-time notifications (Part 3): only the genuinely urgent report types page other users -
+// hail/wind/other stay silent so the feature reads as "alerts", not spam.
+const ALERT_TYPES = new Set(['fire', 'flood']);
 const POINTS_PER_REPORT = 10;
 
 function toReportDto(row) {
@@ -90,6 +94,17 @@ router.post('/', requireAuth, async (req, res) => {
             report: toReportDto(reportRow),
             points: pointsResult.rows[0].points
         });
+
+        // Fire-and-forget: never let push delivery delay or fail the report submission itself.
+        if (ALERT_TYPES.has(reportType)) {
+            pool.query(
+                'SELECT fcm_token FROM users WHERE user_id != $1 AND fcm_token IS NOT NULL LIMIT 100',
+                [req.userId]
+            ).then((tokensResult) => {
+                const title = reportType === 'fire' ? 'Fire reported nearby' : 'Flooding reported nearby';
+                tokensResult.rows.forEach((r) => sendPushToToken(r.fcm_token, title, description.trim()));
+            }).catch((err) => console.error('Fetch push tokens failed:', err));
+        }
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Submit report failed:', err);
