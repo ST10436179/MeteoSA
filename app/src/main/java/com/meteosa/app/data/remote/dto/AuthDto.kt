@@ -23,6 +23,17 @@ data class FcmTokenRequest(
     val token: String
 )
 
+/** Profile picture upload (Part 3 User Defined feature): [imageBase64] is a downscaled,
+ *  compressed JPEG/PNG, already small enough to send as JSON rather than multipart. */
+data class AvatarUploadRequest(
+    val imageBase64: String,
+    val contentType: String
+)
+
+data class AvatarUploadResponse(
+    val avatarUrl: String
+)
+
 data class AuthResponse(
     val token: String,
     val user: UserDto
@@ -33,5 +44,6 @@ data class UserDto(
     val email: String,
     @SerializedName("displayName") val displayName: String,
     @SerializedName("preferredLanguage") val preferredLanguage: String = "en",
-    val points: Int = 0
+    val points: Int = 0,
+    @SerializedName("avatarUrl") val avatarUrl: String? = null
 )

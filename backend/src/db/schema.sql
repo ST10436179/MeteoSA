@@ -23,6 +23,10 @@ ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 -- permission or opened the app since this column was added.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT;
 
+-- Profile picture upload (Part 3 User Defined feature): public URL of the image in the
+-- Supabase Storage "avatars" bucket. Nullable - most users never set one.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
 CREATE TABLE IF NOT EXISTS community_reports (
     report_id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id       UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,

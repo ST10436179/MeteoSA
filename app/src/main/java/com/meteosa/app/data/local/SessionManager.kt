@@ -14,7 +14,8 @@ data class Session(
     val userId: String,
     val email: String,
     val displayName: String,
-    val points: Int
+    val points: Int,
+    val avatarUrl: String? = null
 )
 
 /**
@@ -49,12 +50,18 @@ class SessionManager(context: Context) {
             .putString(KEY_EMAIL, user.email)
             .putString(KEY_DISPLAY_NAME, user.displayName)
             .putInt(KEY_POINTS, user.points)
+            .putString(KEY_AVATAR_URL, user.avatarUrl)
             .apply()
         _session.value = loadSession()
     }
 
     fun updatePoints(points: Int) {
         prefs.edit().putInt(KEY_POINTS, points).apply()
+        _session.value = loadSession()
+    }
+
+    fun updateAvatarUrl(avatarUrl: String) {
+        prefs.edit().putString(KEY_AVATAR_URL, avatarUrl).apply()
         _session.value = loadSession()
     }
 
@@ -70,7 +77,8 @@ class SessionManager(context: Context) {
             userId = prefs.getString(KEY_USER_ID, "") ?: "",
             email = prefs.getString(KEY_EMAIL, "") ?: "",
             displayName = prefs.getString(KEY_DISPLAY_NAME, "") ?: "",
-            points = prefs.getInt(KEY_POINTS, 0)
+            points = prefs.getInt(KEY_POINTS, 0),
+            avatarUrl = prefs.getString(KEY_AVATAR_URL, null)
         )
     }
 
@@ -80,5 +88,6 @@ class SessionManager(context: Context) {
         const val KEY_EMAIL = "email"
         const val KEY_DISPLAY_NAME = "display_name"
         const val KEY_POINTS = "points"
+        const val KEY_AVATAR_URL = "avatar_url"
     }
 }

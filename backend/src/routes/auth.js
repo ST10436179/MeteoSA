@@ -14,7 +14,8 @@ function toUserDto(row) {
         email: row.email,
         displayName: row.display_name,
         preferredLanguage: row.preferred_language,
-        points: row.points
+        points: row.points,
+        avatarUrl: row.avatar_url || null
     };
 }
 

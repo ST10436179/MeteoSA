@@ -16,6 +16,13 @@ val localProps = Properties().apply {
 }
 fun localProp(key: String, default: String) = (localProps.getProperty(key) ?: default)
 
+// This project lives under a OneDrive-synced folder (Videos). OneDrive's file watcher
+// intermittently grabs a lock on freshly-written build outputs (observed repeatedly with
+// processDebugResources' R.jar), causing sporadic "couldn't delete" build failures that have
+// nothing to do with the code. Redirecting build output to local temp - outside OneDrive's
+// sync scope - avoids the conflict entirely. Harmless to delete/regenerate at any time.
+layout.buildDirectory.set(File(System.getenv("TEMP") ?: System.getProperty("java.io.tmpdir"), "meteosa-app-build"))
+
 android {
     namespace = "com.meteosa.app"
     compileSdk = 34
@@ -138,6 +145,10 @@ dependencies {
     // Push notifications (Part 3): Firebase Cloud Messaging.
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-messaging-ktx")
+
+    // Profile picture upload (Part 3 User Defined feature): loads the avatar URL returned by
+    // the backend (Supabase Storage) into a Compose Image.
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Unit testing
     testImplementation("junit:junit:4.13.2")

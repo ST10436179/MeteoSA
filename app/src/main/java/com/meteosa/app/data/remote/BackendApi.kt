@@ -1,6 +1,8 @@
 package com.meteosa.app.data.remote
 
 import com.meteosa.app.data.remote.dto.AuthResponse
+import com.meteosa.app.data.remote.dto.AvatarUploadRequest
+import com.meteosa.app.data.remote.dto.AvatarUploadResponse
 import com.meteosa.app.data.remote.dto.DeleteReportResponse
 import com.meteosa.app.data.remote.dto.GoogleLoginRequest
 import com.meteosa.app.data.remote.dto.LoginRequest
@@ -39,6 +41,9 @@ interface BackendApi {
 
     @PUT("api/users/fcm-token")
     suspend fun updateFcmToken(@Body body: FcmTokenRequest)
+
+    @PUT("api/users/avatar")
+    suspend fun uploadAvatar(@Body body: AvatarUploadRequest): AvatarUploadResponse
 
     @GET("api/reports")
     suspend fun getReports(

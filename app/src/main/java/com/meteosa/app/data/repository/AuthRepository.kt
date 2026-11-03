@@ -2,6 +2,7 @@ package com.meteosa.app.data.repository
 
 import com.meteosa.app.data.local.SessionManager
 import com.meteosa.app.data.remote.BackendApi
+import com.meteosa.app.data.remote.dto.AvatarUploadRequest
 import com.meteosa.app.data.remote.dto.GoogleLoginRequest
 import com.meteosa.app.data.remote.dto.LoginRequest
 import com.meteosa.app.data.remote.dto.RegisterRequest
@@ -33,6 +34,13 @@ class AuthRepository(
     suspend fun loginWithGoogle(idToken: String) {
         val response = api.loginWithGoogle(GoogleLoginRequest(idToken))
         sessionManager.save(response.token, response.user)
+    }
+
+    /** Profile picture upload (Part 3 User Defined feature): [imageBase64] is already
+     *  downscaled/compressed (see SettingsViewModel) before it gets here. */
+    suspend fun uploadAvatar(imageBase64: String, contentType: String) {
+        val response = api.uploadAvatar(AvatarUploadRequest(imageBase64, contentType))
+        sessionManager.updateAvatarUrl(response.avatarUrl)
     }
 
     suspend fun refreshProfile() {

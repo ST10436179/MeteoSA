@@ -33,6 +33,7 @@
     <string name="save_current_location">Save current location</string>
     <string name="location_name_placeholder">e.g. Home, Work</string>
     <string name="no_saved_locations">No saved locations yet. Save your current location to add one.</string>
+    <string name="profile_picture">Profile picture</string>
     <string name="retry">Retry</string>
     <string name="community_reports_nearby">Community Reports Nearby</string>
     <string name="no_reports_nearby_home">No community reports nearby yet. Open the Reports tab to add one.</string>

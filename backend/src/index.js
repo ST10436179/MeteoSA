@@ -8,7 +8,9 @@ const reportsRouter = require('./routes/reports');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+// Default is 100kb - too small for a base64-encoded profile picture (Part 3). The Android
+// client downscales/compresses images before sending, but this still needs real headroom.
+app.use(express.json({ limit: '6mb' }));
 
 // Simple request log - helps a lot when demoing the API in the Part 2 video.
 app.use((req, res, next) => {
