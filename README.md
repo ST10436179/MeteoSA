@@ -193,7 +193,7 @@ The app is prepared for Google Play (prep only, no Console upload):
 ## Demo video
 
 - [Part 2 demonstration video](https://drive.google.com/file/d/1hkOiiqpe1PlpYy0-1O2JXCWfs50HBMma/view?usp=sharing)
-- Final PoE demonstration video: link to be added here once recorded.
+- Final PoE demonstration video: **[PASTE FINAL POE VIDEO LINK HERE]**
 
 ## AI usage
 
