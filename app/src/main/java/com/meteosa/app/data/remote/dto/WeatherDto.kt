@@ -44,3 +44,16 @@ data class WeatherCondition(
 )
 
 data class Wind(val speed: Double)
+
+// One Call 3.0 "daily" response (https://api.openweathermap.org/data/3.0/onecall). We only map
+// the fields the forecast cards need. Used in preference to the 5-day/3-hour endpoint, which
+// OpenWeather now truncates to a handful of entries.
+data class OneCallResponse(val daily: List<OneCallDay> = emptyList())
+
+data class OneCallDay(
+    val dt: Long,
+    val temp: OneCallTemp,
+    val weather: List<WeatherCondition> = emptyList()
+)
+
+data class OneCallTemp(val min: Double, val max: Double)

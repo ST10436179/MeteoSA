@@ -1,6 +1,7 @@
 package com.meteosa.app.ui.screens.home
 
 import com.meteosa.app.data.remote.dto.ForecastResponse
+import com.meteosa.app.data.remote.dto.OneCallResponse
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,4 +53,17 @@ fun weatherEmoji(iconCode: String): String = when {
     iconCode.startsWith("13") -> "❄️" // snow
     iconCode.startsWith("50") -> "🌫️" // fog
     else -> "☀️"
+}
+
+/** One Call 3.0 already returns one entry per day, so this is a straight mapping (5 days). */
+fun OneCallResponse.toDailyForecasts(): List<DailyForecast> {
+    val labelFormat = SimpleDateFormat("EEE", Locale.getDefault())
+    return daily.take(5).map { day ->
+        DailyForecast(
+            dayLabel = labelFormat.format(Date(day.dt * 1000)),
+            icon = day.weather.firstOrNull()?.icon ?: "01d",
+            minTemp = day.temp.min.roundToInt(),
+            maxTemp = day.temp.max.roundToInt()
+        )
+    }
 }

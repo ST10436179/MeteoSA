@@ -6,6 +6,7 @@ import com.meteosa.app.data.local.db.WeatherCacheEntity
 import com.meteosa.app.data.remote.WeatherApi
 import com.meteosa.app.data.remote.dto.CurrentWeatherResponse
 import com.meteosa.app.data.remote.dto.ForecastResponse
+import com.meteosa.app.data.remote.dto.OneCallResponse
 
 class WeatherRepository(
     private val api: WeatherApi,
@@ -17,6 +18,9 @@ class WeatherRepository(
 
     suspend fun getForecast(lat: Double, lon: Double): ForecastResponse =
         api.getForecast(lat, lon, BuildConfig.OPEN_WEATHER_API_KEY)
+
+    suspend fun getDailyForecast(lat: Double, lon: Double): OneCallResponse =
+        api.getDailyForecast(lat, lon, BuildConfig.OPEN_WEATHER_API_KEY)
 
     /** Overwrites the single "last known" weather cache row used for offline viewing. */
     suspend fun cacheWeather(entity: WeatherCacheEntity) = weatherCacheDao.save(entity)

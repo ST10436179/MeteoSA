@@ -17,7 +17,6 @@ import com.meteosa.app.data.repository.WeatherRepository
 import com.meteosa.app.util.UiState
 import com.meteosa.app.util.toUserMessage
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -90,8 +89,15 @@ class HomeViewModel(
         viewModelScope.launch {
             _uiState.value = try {
                 val current = weatherRepository.getCurrentWeather(lat, lon)
-                val forecast = weatherRepository.getForecast(lat, lon)
-                val daily = forecast.toDailyForecasts()
+                // Prefer One Call 3.0 (a real 5+ day forecast). If the key lacks that
+                // subscription or the call fails, fall back to the 5-day/3-hour endpoint.
+                val daily = try {
+                    weatherRepository.getDailyForecast(lat, lon).toDailyForecasts()
+                        .also { check(it.size > 1) { "One Call returned too few days" } }
+                } catch (e: Exception) {
+                    android.util.Log.w("HomeViewModel", "One Call forecast unavailable, falling back: ${e.message}")
+                    weatherRepository.getForecast(lat, lon).toDailyForecasts()
+                }
                 _locationLabel.value = when {
                     savedLocationName != null -> savedLocationName
                     usingDeviceLocation -> current.name
@@ -165,7 +171,9 @@ private fun WeatherCacheEntity.toCurrentWeatherResponse() = CurrentWeatherRespon
 )
 
 private fun WeatherCacheEntity.toDailyForecastList(): List<DailyForecast> {
-    val type = object : TypeToken<List<CachedDailyForecast>>() {}.type
-    val cached: List<CachedDailyForecast> = gson.fromJson(dailyForecastJson, type) ?: emptyList()
+    // Decode as an array: a TypeToken subclass gets stripped by R8 in release builds and
+    // crashes ("Missing type parameter") on the offline-cache path.
+    val cached: List<CachedDailyForecast> =
+        gson.fromJson(dailyForecastJson, Array<CachedDailyForecast>::class.java)?.toList() ?: emptyList()
     return cached.map { DailyForecast(it.dayLabel, it.icon, it.minTemp, it.maxTemp) }
 }

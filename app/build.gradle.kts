@@ -31,8 +31,8 @@ android {
         applicationId = "com.meteosa.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0-prototype"
+        versionCode = 2
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -48,9 +48,36 @@ android {
         )
     }
 
+    // Release signing: credentials come from keystore.properties (git-ignored; the .jks itself
+    // lives outside the repo/OneDrive). If absent (e.g. CI), release stays unsigned.
+    val keystoreProps = Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) load(FileInputStream(f))
+    }
+    signingConfigs {
+        if (keystoreProps.getProperty("storeFile") != null) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 shrinking/obfuscation for Play Store; keep rules are in proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            // Release can't use cleartext HTTP, so point at the hosted HTTPS API instead of the
+            // dev-only 127.0.0.1 (adb reverse) URL used by debug builds.
+            buildConfigField(
+                "String",
+                "BACKEND_BASE_URL",
+                "\"${localProp("BACKEND_BASE_URL_RELEASE", "https://meteosa.onrender.com/")}\""
+            )
+            signingConfigs.findByName("release")?.let { signingConfig = it }
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
